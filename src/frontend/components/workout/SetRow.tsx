@@ -1,0 +1,126 @@
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import type { WorkoutSet } from '@shared/types/workout';
+
+type SetRowProps = {
+  set?: WorkoutSet;
+  previousSet?: WorkoutSet;
+  setNumber: number;
+  isStrength: boolean;
+  onSave: (data: { weightKg?: number; reps?: number; durationSeconds?: number; distanceMeters?: number }) => void;
+  onRemove?: () => void;
+};
+
+export function SetRow({ set, previousSet, setNumber, isStrength, onSave, onRemove }: SetRowProps) {
+  const [weight, setWeight] = useState(set?.weightKg?.toString() ?? '');
+  const [reps, setReps] = useState(set?.reps?.toString() ?? '');
+  const [duration, setDuration] = useState(set?.durationSeconds?.toString() ?? '');
+  const [distance, setDistance] = useState(set?.distanceMeters?.toString() ?? '');
+  const [saved, setSaved] = useState(!!set);
+
+  useEffect(() => {
+    if (set) {
+      setWeight(set.weightKg?.toString() ?? '');
+      setReps(set.reps?.toString() ?? '');
+      setDuration(set.durationSeconds?.toString() ?? '');
+      setDistance(set.distanceMeters?.toString() ?? '');
+      setSaved(true);
+    }
+  }, [set]);
+
+  const handleSave = () => {
+    if (isStrength) {
+      const w = weight ? parseFloat(weight) : undefined;
+      const r = reps ? parseInt(reps, 10) : undefined;
+      if (w !== undefined || r !== undefined) {
+        onSave({ weightKg: w, reps: r });
+        setSaved(true);
+      }
+    } else {
+      const d = duration ? parseInt(duration, 10) : undefined;
+      const dist = distance ? parseFloat(distance) : undefined;
+      if (d !== undefined || dist !== undefined) {
+        onSave({ durationSeconds: d, distanceMeters: dist });
+        setSaved(true);
+      }
+    }
+  };
+
+  return (
+    <View>
+      <View className="flex-row items-center py-2 gap-2">
+        <View className="w-8 h-8 rounded-full bg-background-100 items-center justify-center">
+          <Text className="text-xs font-bold text-foreground-muted">{setNumber}</Text>
+        </View>
+
+        {isStrength ? (
+          <>
+            <TextInput
+              className="h-10 flex-1 rounded-lg bg-background-100 px-3 text-center text-sm text-foreground"
+              placeholder="kg"
+              placeholderTextColor="rgb(115, 115, 115)"
+              keyboardType="decimal-pad"
+              value={weight}
+              onChangeText={(v) => { setWeight(v); setSaved(false); }}
+            />
+            <Text className="text-foreground-subtle text-xs">x</Text>
+            <TextInput
+              className="h-10 flex-1 rounded-lg bg-background-100 px-3 text-center text-sm text-foreground"
+              placeholder="reps"
+              placeholderTextColor="rgb(115, 115, 115)"
+              keyboardType="number-pad"
+              value={reps}
+              onChangeText={(v) => { setReps(v); setSaved(false); }}
+            />
+          </>
+        ) : (
+          <>
+            <TextInput
+              className="h-10 flex-1 rounded-lg bg-background-100 px-3 text-center text-sm text-foreground"
+              placeholder="sec"
+              placeholderTextColor="rgb(115, 115, 115)"
+              keyboardType="number-pad"
+              value={duration}
+              onChangeText={(v) => { setDuration(v); setSaved(false); }}
+            />
+            <TextInput
+              className="h-10 flex-1 rounded-lg bg-background-100 px-3 text-center text-sm text-foreground"
+              placeholder="meters"
+              placeholderTextColor="rgb(115, 115, 115)"
+              keyboardType="decimal-pad"
+              value={distance}
+              onChangeText={(v) => { setDistance(v); setSaved(false); }}
+            />
+          </>
+        )}
+
+        {!saved ? (
+          <Pressable onPress={handleSave} className="w-10 h-10 items-center justify-center rounded-lg bg-primary">
+            <Ionicons name="checkmark" size={18} color="rgb(10, 10, 15)" />
+          </Pressable>
+        ) : (
+          <View className="w-10 h-10 items-center justify-center">
+            <Ionicons name="checkmark-circle" size={20} color="rgb(52, 211, 153)" />
+          </View>
+        )}
+
+        {onRemove && (
+          <Pressable onPress={onRemove} className="w-8 h-8 items-center justify-center">
+            <Ionicons name="trash-outline" size={16} color="rgb(239, 68, 68)" />
+          </Pressable>
+        )}
+      </View>
+
+      {previousSet && (
+        <View className="ml-10 -mt-1 mb-1">
+          <Text className="text-xs text-foreground-subtle">
+            {isStrength
+              ? `Last: ${previousSet.weightKg ?? 0}kg x ${previousSet.reps ?? 0}`
+              : `Last: ${previousSet.durationSeconds ?? 0}s${previousSet.distanceMeters != null ? ` · ${previousSet.distanceMeters}m` : ''}`}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}

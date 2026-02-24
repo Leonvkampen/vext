@@ -1,0 +1,199 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import * as workoutService from '@backend/services/workoutService';
+import { useDatabase } from '@frontend/hooks/useDatabase';
+import type { WorkoutSetInput } from '@backend/models/workoutSet';
+import Toast from 'react-native-toast-message';
+
+export function useActiveWorkout() {
+  const db = useDatabase();
+  return useQuery({
+    queryKey: ['activeWorkout'],
+    queryFn: () => workoutService.getActiveWorkout(db),
+    staleTime: 30 * 1000,
+  });
+}
+
+export function useFullWorkout(workoutId: string | undefined) {
+  const db = useDatabase();
+  return useQuery({
+    queryKey: ['workout', workoutId],
+    queryFn: () => workoutService.getFullWorkout(db, workoutId!),
+    enabled: !!workoutId,
+    staleTime: 30 * 1000,
+  });
+}
+
+export function useStartWorkout() {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ typeId, name }: { typeId: string; name?: string }) =>
+      workoutService.startWorkout(db, typeId, name),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activeWorkout'] });
+    },
+    onError: (error: Error) => {
+      Toast.show({ type: 'error', text1: 'Error', text2: error.message });
+    },
+  });
+}
+
+export function useAddExercise(workoutId: string) {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ exerciseId, restSeconds }: { exerciseId: string; restSeconds?: number }) =>
+      workoutService.addExerciseToWorkout(db, workoutId, exerciseId, restSeconds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workout', workoutId] });
+    },
+  });
+}
+
+export function useLogSet(workoutId: string) {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ workoutExerciseId, data }: { workoutExerciseId: string; data: WorkoutSetInput }) =>
+      workoutService.logSet(db, workoutExerciseId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workout', workoutId] });
+    },
+    onError: (error: Error) => {
+      Toast.show({ type: 'error', text1: 'Invalid set', text2: error.message });
+    },
+  });
+}
+
+export function useUpdateSet(workoutId: string) {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ setId, data }: { setId: string; data: WorkoutSetInput }) =>
+      workoutService.updateSet(db, setId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workout', workoutId] });
+    },
+  });
+}
+
+export function useRemoveSet(workoutId: string) {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (setId: string) => workoutService.removeSet(db, setId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workout', workoutId] });
+    },
+  });
+}
+
+export function useRemoveExercise(workoutId: string) {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (workoutExerciseId: string) =>
+      workoutService.removeExerciseFromWorkout(db, workoutExerciseId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workout', workoutId] });
+    },
+  });
+}
+
+export function useCompleteWorkout() {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (workoutId: string) => workoutService.completeWorkout(db, workoutId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activeWorkout'] });
+      queryClient.invalidateQueries({ queryKey: ['workoutHistory'] });
+      queryClient.invalidateQueries({ queryKey: ['todayStats'] });
+      queryClient.invalidateQueries({ queryKey: ['weeklyStats'] });
+      queryClient.invalidateQueries({ queryKey: ['currentStreak'] });
+      queryClient.invalidateQueries({ queryKey: ['workoutFrequency'] });
+      queryClient.invalidateQueries({ queryKey: ['personalRecords'] });
+      queryClient.invalidateQueries({ queryKey: ['volumeOverTime'] });
+      queryClient.invalidateQueries({ queryKey: ['recentWorkouts'] });
+    },
+    onError: (error: Error) => {
+      Toast.show({ type: 'error', text1: 'Error', text2: error.message });
+    },
+  });
+}
+
+export function useDiscardWorkout() {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (workoutId: string) => workoutService.discardWorkout(db, workoutId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activeWorkout'] });
+    },
+  });
+}
+
+export function useRepeatWorkout() {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (sourceWorkoutId: string) =>
+      workoutService.repeatWorkout(db, sourceWorkoutId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activeWorkout'] });
+    },
+    onError: (error: Error) => {
+      Toast.show({ type: 'error', text1: 'Error', text2: error.message });
+    },
+  });
+}
+
+export function useDeleteWorkout() {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (workoutId: string) => workoutService.deleteWorkout(db, workoutId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workoutHistory'] });
+      queryClient.invalidateQueries({ queryKey: ['workoutHistoryCount'] });
+      queryClient.invalidateQueries({ queryKey: ['todayStats'] });
+      queryClient.invalidateQueries({ queryKey: ['weeklyStats'] });
+      queryClient.invalidateQueries({ queryKey: ['currentStreak'] });
+      queryClient.invalidateQueries({ queryKey: ['recentWorkouts'] });
+    },
+    onError: (error: Error) => {
+      Toast.show({ type: 'error', text1: 'Error', text2: error.message });
+    },
+  });
+}
+
+export function useDeleteWorkouts() {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (workoutIds: string[]) => workoutService.deleteWorkouts(db, workoutIds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workoutHistory'] });
+      queryClient.invalidateQueries({ queryKey: ['workoutHistoryCount'] });
+      queryClient.invalidateQueries({ queryKey: ['todayStats'] });
+      queryClient.invalidateQueries({ queryKey: ['weeklyStats'] });
+      queryClient.invalidateQueries({ queryKey: ['currentStreak'] });
+      queryClient.invalidateQueries({ queryKey: ['recentWorkouts'] });
+    },
+    onError: (error: Error) => {
+      Toast.show({ type: 'error', text1: 'Error', text2: error.message });
+    },
+  });
+}
+
+export function useUpdateWorkoutExerciseRestSeconds(workoutId: string) {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ workoutExerciseId, restSeconds }: { workoutExerciseId: string; restSeconds: number }) =>
+      workoutService.updateWorkoutExerciseRestSeconds(db, workoutExerciseId, restSeconds),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workout', workoutId] });
+    },
+  });
+}

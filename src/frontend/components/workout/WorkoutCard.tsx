@@ -1,0 +1,87 @@
+import React from 'react';
+import { View, Text, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import type { WorkoutSummary } from '@shared/types/workout';
+import { formatDate, formatDuration, formatVolume } from '@shared/utils/formatting';
+import { useSettingsStore } from '@backend/store/settingsStore';
+
+type WorkoutCardProps = {
+  workout: WorkoutSummary;
+  onPress: () => void;
+  onRepeat?: () => void;
+  onDelete?: () => void;
+  sessionCount?: number;
+};
+
+export function WorkoutCard({ workout, onPress, onRepeat, onDelete, sessionCount }: WorkoutCardProps) {
+  const units = useSettingsStore((s) => s.units);
+  const duration = workout.completedAt
+    ? Math.floor((new Date(workout.completedAt).getTime() - new Date(workout.startedAt).getTime()) / 1000)
+    : 0;
+
+  return (
+    <Pressable onPress={onPress} className="mb-3 rounded-xl bg-background-50 p-4">
+      <View className="flex-row items-center justify-between">
+        <View className="flex-1">
+          <Text className="text-base font-semibold text-foreground">
+            {workout.name || workout.workoutTypeName}
+          </Text>
+          <Text className="mt-1 text-xs text-foreground-subtle">
+            {sessionCount && sessionCount > 1
+              ? `${sessionCount} sessions · Last: ${formatDate(workout.startedAt)}`
+              : formatDate(workout.startedAt)}
+          </Text>
+        </View>
+        <View className="rounded-md bg-primary/15 px-2 py-1">
+          <Text className="text-xs font-medium text-primary">{workout.workoutTypeName}</Text>
+        </View>
+      </View>
+
+      <View className="mt-3 flex-row items-center">
+        <View className="flex-1 flex-row gap-4">
+          <View className="flex-row items-center gap-1">
+            <Ionicons name="time-outline" size={14} color="rgb(163, 163, 163)" />
+            <Text className="text-xs text-foreground-muted">{formatDuration(duration)}</Text>
+          </View>
+          <View className="flex-row items-center gap-1">
+            <Ionicons name="barbell-outline" size={14} color="rgb(163, 163, 163)" />
+            <Text className="text-xs text-foreground-muted">{workout.exerciseCount} exercises</Text>
+          </View>
+          <View className="flex-row items-center gap-1">
+            <Ionicons name="layers-outline" size={14} color="rgb(163, 163, 163)" />
+            <Text className="text-xs text-foreground-muted">{workout.setCount} sets</Text>
+          </View>
+          {workout.totalVolume > 0 && (
+            <View className="flex-row items-center gap-1">
+              <Ionicons name="trending-up-outline" size={14} color="rgb(163, 163, 163)" />
+              <Text className="text-xs text-foreground-muted">{formatVolume(workout.totalVolume, units)}</Text>
+            </View>
+          )}
+        </View>
+        {onRepeat && (
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation();
+              onRepeat();
+            }}
+            className="ml-2 rounded-lg bg-background-100 px-2.5 py-1.5 flex-row items-center gap-1"
+          >
+            <Ionicons name="repeat-outline" size={14} color="rgb(52, 211, 153)" />
+            <Text className="text-xs font-medium text-primary">Repeat</Text>
+          </Pressable>
+        )}
+        {onDelete && (
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="ml-1.5 rounded-lg bg-background-100 p-1.5"
+          >
+            <Ionicons name="trash-outline" size={14} color="rgb(239, 68, 68)" />
+          </Pressable>
+        )}
+      </View>
+    </Pressable>
+  );
+}
