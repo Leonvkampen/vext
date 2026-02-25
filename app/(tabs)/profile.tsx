@@ -80,7 +80,7 @@ export default function ProfileScreen() {
         <View className="mx-4 mt-3 rounded-xl bg-background-50 p-4">
           <Text className="text-sm font-medium text-foreground-muted mb-3">About</Text>
           <View className="flex-row items-center justify-between">
-            <Text className="text-base text-foreground">Vitalis</Text>
+            <Text className="text-base text-foreground">Vext</Text>
             <Text className="text-sm text-foreground-subtle">v1.0.0</Text>
           </View>
         </View>

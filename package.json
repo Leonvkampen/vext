@@ -1,5 +1,5 @@
 {
-  "name": "vitalis",
+  "name": "vext",
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
@@ -46,6 +46,9 @@
     "@types/react": "~19.1.0",
     "@types/uuid": "^10.0.0",
     "typescript": "~5.9.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@shopify/react-native-skia"]
   },
   "private": true
 }

@@ -107,7 +107,7 @@ export default function RootLayout() {
                 </AppInitializer>
               </ErrorBoundary>
               <StatusBar style="light" />
-              <Toast />
+              <Toast autoHide visibilityTime={3000} />
             </DatabaseProvider>
           </QueryClientProvider>
         </GestureHandlerRootView>

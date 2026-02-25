@@ -29,7 +29,7 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }): R
         }
       })
       .catch((err) => {
-        console.error('[Vitalis] Database initialization failed:', err);
+        console.error('[Vext] Database initialization failed:', err);
         if (mounted) {
           setError(err instanceof Error ? err.message : String(err));
           setIsReady(true); // unblock the UI so the error state renders
