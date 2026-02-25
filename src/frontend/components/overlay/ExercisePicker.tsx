@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Modal, View, Text, TextInput, FlatList, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useExercises, useExerciseSearch } from '@frontend/hooks/useExercises';
+import { useExercises, useExerciseSearch, useCreateExercise } from '@frontend/hooks/useExercises';
+import { ExerciseForm } from '@frontend/components/overlay/ExerciseForm';
 import { EQUIPMENT_LABELS } from '@shared/constants/equipment';
 import type { Exercise, ExerciseCategory } from '@shared/types/exercise';
 
@@ -21,9 +22,11 @@ type ExercisePickerProps = {
 export function ExercisePicker({ visible, onSelect, onClose }: ExercisePickerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   const exercisesQuery = useExercises(selectedCategory ?? undefined);
   const searchResults = useExerciseSearch(searchQuery);
+  const createExercise = useCreateExercise();
 
   const isSearching = searchQuery.length > 0;
   const exercises = useMemo(() => {
@@ -54,9 +57,14 @@ export function ExercisePicker({ visible, onSelect, onClose }: ExercisePickerPro
           {/* Header */}
           <View className="flex-row items-center justify-between border-b border-background-100 px-4 py-3">
             <Text className="text-lg font-bold text-foreground">Select Exercise</Text>
-            <Pressable onPress={handleClose} className="p-1">
-              <Ionicons name="close" size={24} color="rgb(163, 163, 163)" />
-            </Pressable>
+            <View className="flex-row items-center gap-2">
+              <Pressable onPress={() => setShowCreateForm(true)} className="p-1">
+                <Ionicons name="add-circle" size={26} color="rgb(52, 211, 153)" />
+              </Pressable>
+              <Pressable onPress={handleClose} className="p-1">
+                <Ionicons name="close" size={24} color="rgb(163, 163, 163)" />
+              </Pressable>
+            </View>
           </View>
 
           {/* Search */}
@@ -114,6 +122,19 @@ export function ExercisePicker({ visible, onSelect, onClose }: ExercisePickerPro
           />
         </Pressable>
       </Pressable>
+
+      {/* Create exercise form */}
+      <ExerciseForm
+        visible={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        onSave={(data) => {
+          createExercise.mutate(data, {
+            onSuccess: (newExercise) => {
+              handleSelect(newExercise);
+            },
+          });
+        }}
+      />
     </Modal>
   );
 }

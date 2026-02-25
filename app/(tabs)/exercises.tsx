@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, TextInput, FlatList, Pressable, ScrollView, Modal } from 'react-native';
+import { View, Text, TextInput, FlatList, Pressable, ScrollView, Modal, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useExercises, useExerciseSearch } from '@frontend/hooks/useExercises';
+import { useExercises, useExerciseSearch, useCreateExercise, useUpdateExercise, useArchiveExercise } from '@frontend/hooks/useExercises';
 import { EmptyState } from '@frontend/components/EmptyState';
+import { ExerciseForm } from '@frontend/components/overlay/ExerciseForm';
 import { MUSCLE_GROUP_LABELS } from '@shared/constants/muscleGroups';
 import { EQUIPMENT_LABELS } from '@shared/constants/equipment';
 import type { Exercise, ExerciseCategory } from '@shared/types/exercise';
@@ -23,6 +24,8 @@ export default function ExercisesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | null>(null);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
 
   const db = useDatabase();
   const queryClient = useQueryClient();
@@ -44,6 +47,10 @@ export default function ExercisesScreen() {
     },
   });
 
+  const createExerciseMutation = useCreateExercise();
+  const updateExerciseMutation = useUpdateExercise();
+  const archiveExerciseMutation = useArchiveExercise();
+
   const exercisesQuery = useExercises(selectedCategory ?? undefined);
   const searchResults = useExerciseSearch(searchQuery);
 
@@ -58,11 +65,29 @@ export default function ExercisesScreen() {
 
   const isLoading = isSearching ? searchResults.isLoading : exercisesQuery.isLoading;
 
+  const handleArchive = (exercise: Exercise) => {
+    Alert.alert(
+      'Archive Exercise',
+      `Are you sure you want to archive "${exercise.name}"? It will be hidden from all lists.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Archive',
+          style: 'destructive',
+          onPress: () => {
+            archiveExerciseMutation.mutate(exercise.id);
+            setSelectedExercise(null);
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View className="flex-1 bg-background">
-      {/* Search */}
-      <View className="px-4 pt-4 pb-2">
-        <View className="flex-row items-center rounded-xl bg-background-50 px-4 py-3">
+      {/* Search + Add */}
+      <View className="px-4 pt-4 pb-2 flex-row items-center gap-2">
+        <View className="flex-1 flex-row items-center rounded-xl bg-background-50 px-4 py-3">
           <Ionicons name="search" size={18} color="rgb(115, 115, 115)" />
           <TextInput
             className="ml-3 flex-1 text-base text-foreground"
@@ -79,6 +104,12 @@ export default function ExercisesScreen() {
             </Pressable>
           )}
         </View>
+        <Pressable
+          onPress={() => setShowCreateForm(true)}
+          className="rounded-xl bg-primary p-3"
+        >
+          <Ionicons name="add" size={22} color="white" />
+        </Pressable>
       </View>
 
       {/* Category chips */}
@@ -119,7 +150,14 @@ export default function ExercisesScreen() {
             onPress={() => setSelectedExercise(item)}
             className="mb-2 rounded-xl bg-background-50 p-4"
           >
-            <Text className="text-base font-semibold text-foreground">{item.name}</Text>
+            <View className="flex-row items-center justify-between">
+              <Text className="flex-1 text-base font-semibold text-foreground">{item.name}</Text>
+              {!item.isDefault && (
+                <View className="rounded-md bg-primary/10 px-2 py-0.5 ml-2">
+                  <Text className="text-[10px] font-medium text-primary">Custom</Text>
+                </View>
+              )}
+            </View>
             <View className="mt-2 flex-row flex-wrap gap-2">
               <View className="rounded-md bg-primary/15 px-2 py-1">
                 <Text className="text-xs font-medium text-primary">{item.category}</Text>
@@ -144,7 +182,7 @@ export default function ExercisesScreen() {
             {selectedExercise && (
               <>
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-xl font-bold text-foreground">{selectedExercise.name}</Text>
+                  <Text className="flex-1 text-xl font-bold text-foreground">{selectedExercise.name}</Text>
                   <Pressable onPress={() => setSelectedExercise(null)}>
                     <Ionicons name="close" size={24} color="rgb(163, 163, 163)" />
                   </Pressable>
@@ -212,11 +250,51 @@ export default function ExercisesScreen() {
                     <Text className="mt-2 text-sm leading-5 text-foreground-muted">{selectedExercise.instructions}</Text>
                   </>
                 )}
+
+                {/* Edit & Archive actions */}
+                <View className="mt-5 flex-row gap-2">
+                  <Pressable
+                    onPress={() => {
+                      setEditingExercise(selectedExercise);
+                      setSelectedExercise(null);
+                    }}
+                    className="flex-1 flex-row items-center justify-center rounded-xl bg-background-100 py-3 gap-2"
+                  >
+                    <Ionicons name="pencil" size={16} color="rgb(163, 163, 163)" />
+                    <Text className="text-sm font-medium text-foreground-muted">Edit</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => handleArchive(selectedExercise)}
+                    className="flex-1 flex-row items-center justify-center rounded-xl bg-red-500/10 py-3 gap-2"
+                  >
+                    <Ionicons name="archive-outline" size={16} color="rgb(239, 68, 68)" />
+                    <Text className="text-sm font-medium text-red-500">Archive</Text>
+                  </Pressable>
+                </View>
               </>
             )}
           </Pressable>
         </Pressable>
       </Modal>
+
+      {/* Create exercise form */}
+      <ExerciseForm
+        visible={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        onSave={(data) => createExerciseMutation.mutate(data)}
+      />
+
+      {/* Edit exercise form */}
+      <ExerciseForm
+        visible={!!editingExercise}
+        exercise={editingExercise}
+        onClose={() => setEditingExercise(null)}
+        onSave={(data) => {
+          if (editingExercise) {
+            updateExerciseMutation.mutate({ id: editingExercise.id, data });
+          }
+        }}
+      />
     </View>
   );
 }

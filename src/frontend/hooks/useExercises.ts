@@ -1,8 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import * as exerciseModel from '@backend/models/exercise';
+import * as exerciseService from '@backend/services/exerciseService';
 import { useDatabase } from '@frontend/hooks/useDatabase';
-import type { ExerciseCategory } from '@shared/types/exercise';
+import type { ExerciseCategory, Equipment, MuscleGroup } from '@shared/types/exercise';
 import { APP_CONFIG } from '@config/app';
 
 export function useExercises(category?: ExerciseCategory) {
@@ -37,5 +38,56 @@ export function useExercise(id: string) {
     queryKey: ['exercise', id],
     queryFn: () => exerciseModel.getById(db, id),
     enabled: !!id,
+  });
+}
+
+export function useCreateExercise() {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: {
+      name: string;
+      category: ExerciseCategory;
+      primaryMuscles: MuscleGroup[];
+      equipment: Equipment;
+      instructions?: string | null;
+      restSeconds?: number | null;
+    }) => exerciseService.createExercise(db, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['exercises'] });
+    },
+  });
+}
+
+export function useUpdateExercise() {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: {
+      id: string;
+      data: {
+        name?: string;
+        category?: ExerciseCategory;
+        primaryMuscles?: MuscleGroup[];
+        equipment?: Equipment;
+        instructions?: string | null;
+        restSeconds?: number | null;
+      };
+    }) => exerciseService.updateExercise(db, id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['exercises'] });
+      queryClient.invalidateQueries({ queryKey: ['exercise', variables.id] });
+    },
+  });
+}
+
+export function useArchiveExercise() {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => exerciseService.archiveExercise(db, id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['exercises'] });
+    },
   });
 }

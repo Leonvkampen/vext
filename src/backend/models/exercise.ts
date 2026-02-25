@@ -124,6 +124,44 @@ export async function create(
   return exercise;
 }
 
+export async function update(
+  db: SQLite.SQLiteDatabase,
+  id: string,
+  data: {
+    name?: string;
+    category?: ExerciseCategory;
+    primaryMuscles?: MuscleGroup[];
+    equipment?: Equipment;
+    instructions?: string | null;
+    restSeconds?: number | null;
+  }
+): Promise<Exercise> {
+  const fields: string[] = [];
+  const values: SQLite.SQLiteBindValue[] = [];
+
+  if (data.name !== undefined) { fields.push('name = ?'); values.push(data.name); }
+  if (data.category !== undefined) { fields.push('category = ?'); values.push(data.category); }
+  if (data.primaryMuscles !== undefined) { fields.push('primary_muscles = ?'); values.push(JSON.stringify(data.primaryMuscles)); }
+  if (data.equipment !== undefined) { fields.push('equipment = ?'); values.push(data.equipment); }
+  if (data.instructions !== undefined) { fields.push('instructions = ?'); values.push(data.instructions); }
+  if (data.restSeconds !== undefined) { fields.push('rest_seconds = ?'); values.push(data.restSeconds); }
+
+  if (fields.length === 0) {
+    const exercise = await getById(db, id);
+    if (!exercise) throw new Error(`Exercise not found: ${id}`);
+    return exercise;
+  }
+
+  values.push(id);
+  await db.runAsync(
+    `UPDATE exercises SET ${fields.join(', ')} WHERE id = ?`,
+    ...values
+  );
+  const exercise = await getById(db, id);
+  if (!exercise) throw new Error(`Exercise not found: ${id}`);
+  return exercise;
+}
+
 export async function updateRestSeconds(
   db: SQLite.SQLiteDatabase,
   id: string,
