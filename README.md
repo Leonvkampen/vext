@@ -66,11 +66,33 @@ This builds the native Android app and launches it on a connected device or emul
 pnpm ios
 ```
 
-## Release Build
+## CI / Releases
 
-### Android
+GitHub Actions automatically builds Android APKs. The workflow is in `.github/workflows/build-android.yml`.
+
+| Trigger | Environment | APK type |
+|---|---|---|
+| Push to `master` | Test | Debug APK (artifact) |
+| Manual "Run workflow" | Staging | Release APK (artifact) |
+| Push tag `v*` | Production | Release APK + GitHub Release |
+
+### Creating a release
 
 ```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+This builds a release-signed APK, creates a GitHub Release with auto-generated notes, and attaches the APK for download.
+
+### Release signing
+
+Release builds are signed with a keystore stored as a GitHub Secret (`RELEASE_KEYSTORE_BASE64`). The Expo config plugin `plugins/withReleaseSigning.js` injects the signing config during `expo prebuild`. Locally, release builds fall back to the debug keystore.
+
+### Local release build
+
+```bash
+npx expo prebuild --platform android --clean
 cd android && ./gradlew assembleRelease
 ```
 

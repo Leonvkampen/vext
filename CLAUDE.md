@@ -11,6 +11,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 No test runner or linter is configured yet.
 
+## CI
+
+GitHub Actions (`.github/workflows/build-android.yml`) builds Android APKs. Push to `master` triggers a debug test build, manual dispatch triggers a staging release build, and pushing a `v*` tag triggers a production release build with a GitHub Release.
+
+Release signing is handled by the Expo config plugin `plugins/withReleaseSigning.js` which reads keystore credentials from environment variables (set via GitHub Secrets in CI) and falls back to the debug keystore locally. The native `android/` directory is not committed — it's generated via `npx expo prebuild` in CI.
+
 ## Architecture
 
 Expo SDK 54 React Native app (New Architecture enabled) with React 19 and TypeScript in strict mode. Uses expo-router for file-based routing.
