@@ -197,3 +197,15 @@ export function useUpdateWorkoutExerciseRestSeconds(workoutId: string) {
     },
   });
 }
+
+export function useUpdateExerciseTargetReps(workoutId: string) {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ workoutExerciseId, targetRepsMin, targetRepsMax }: { workoutExerciseId: string; targetRepsMin: number | null; targetRepsMax: number | null }) =>
+      workoutService.updateExerciseTargetReps(db, workoutExerciseId, targetRepsMin, targetRepsMax),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workout', workoutId] });
+    },
+  });
+}

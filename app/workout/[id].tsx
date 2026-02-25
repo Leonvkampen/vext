@@ -18,6 +18,7 @@ import {
   useCompleteWorkout,
   useDiscardWorkout,
   useUpdateWorkoutExerciseRestSeconds,
+  useUpdateExerciseTargetReps,
 } from '@frontend/hooks/useWorkout';
 import { usePreviousSetsForExercises } from '@frontend/hooks/useHistory';
 import type { Exercise } from '@shared/types/exercise';
@@ -45,6 +46,7 @@ export default function ActiveWorkoutScreen() {
   const completeWorkout = useCompleteWorkout();
   const discardWorkout = useDiscardWorkout();
   const updateRestSeconds = useUpdateWorkoutExerciseRestSeconds(id!);
+  const updateTargetReps = useUpdateExerciseTargetReps(id!);
 
   const handleAddExercise = (exercise: Exercise) => {
     addExercise.mutate({ exerciseId: exercise.id });
@@ -112,6 +114,7 @@ export default function ActiveWorkoutScreen() {
             onRemoveSet={(setId) => removeSet.mutate(setId)}
             onRemoveExercise={() => removeExercise.mutate(item.id)}
             onUpdateRestSeconds={(seconds) => updateRestSeconds.mutate({ workoutExerciseId: item.id, restSeconds: seconds })}
+            onUpdateTargetReps={(min, max) => updateTargetReps.mutate({ workoutExerciseId: item.id, targetRepsMin: min, targetRepsMax: max })}
           />
         )}
       />

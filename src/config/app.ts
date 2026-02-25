@@ -1,7 +1,7 @@
 export const APP_CONFIG = {
   database: {
-    name: 'vitalis.db',
-    schemaVersion: 2,
+    name: 'vext.db',
+    schemaVersion: 3,
   },
   defaults: {
     restSeconds: {

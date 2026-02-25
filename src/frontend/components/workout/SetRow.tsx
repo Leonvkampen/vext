@@ -1,18 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { cn } from '@frontend/lib/utils';
 import type { WorkoutSet } from '@shared/types/workout';
+
+function getRepsColor(reps: number | null, min: number | null, max: number | null): string {
+  if (reps == null || min == null || max == null) return 'text-foreground';
+  if (reps < min) return 'text-amber-500';
+  if (reps > max) return 'text-blue-400';
+  return 'text-emerald-400';
+}
 
 type SetRowProps = {
   set?: WorkoutSet;
   previousSet?: WorkoutSet;
   setNumber: number;
   isStrength: boolean;
+  targetRepsMin?: number | null;
+  targetRepsMax?: number | null;
   onSave: (data: { weightKg?: number; reps?: number; durationSeconds?: number; distanceMeters?: number }) => void;
   onRemove?: () => void;
 };
 
-export function SetRow({ set, previousSet, setNumber, isStrength, onSave, onRemove }: SetRowProps) {
+export function SetRow({ set, previousSet, setNumber, isStrength, targetRepsMin, targetRepsMax, onSave, onRemove }: SetRowProps) {
   const [weight, setWeight] = useState(set?.weightKg?.toString() ?? '');
   const [reps, setReps] = useState(set?.reps?.toString() ?? '');
   const [duration, setDuration] = useState(set?.durationSeconds?.toString() ?? '');
@@ -66,7 +76,12 @@ export function SetRow({ set, previousSet, setNumber, isStrength, onSave, onRemo
             />
             <Text className="text-foreground-subtle text-xs">x</Text>
             <TextInput
-              className="h-10 flex-1 rounded-lg bg-background-100 px-3 text-center text-sm text-foreground"
+              className={cn(
+                'h-10 flex-1 rounded-lg bg-background-100 px-3 text-center text-sm',
+                saved && reps
+                  ? getRepsColor(parseInt(reps, 10), targetRepsMin ?? null, targetRepsMax ?? null)
+                  : 'text-foreground'
+              )}
               placeholder="reps"
               placeholderTextColor="rgb(115, 115, 115)"
               keyboardType="number-pad"

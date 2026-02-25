@@ -1,9 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SetRow } from './SetRow';
 import { ConfirmDialog } from '@frontend/components/overlay/ConfirmDialog';
 import type { WorkoutExerciseFull, WorkoutSet } from '@shared/types/workout';
+
+function parseRepRange(input: string): { min: number | null; max: number | null } {
+  const trimmed = input.trim();
+  if (!trimmed) return { min: null, max: null };
+  const rangeMatch = trimmed.match(/^(\d+)\s*-\s*(\d+)$/);
+  if (rangeMatch) {
+    return { min: parseInt(rangeMatch[1], 10), max: parseInt(rangeMatch[2], 10) };
+  }
+  const singleMatch = trimmed.match(/^(\d+)$/);
+  if (singleMatch) {
+    const val = parseInt(singleMatch[1], 10);
+    return { min: val, max: val };
+  }
+  return { min: null, max: null };
+}
+
+function formatRepRange(min: number | null, max: number | null): string {
+  if (min == null || max == null) return '';
+  if (min === max) return `${min}`;
+  return `${min}-${max}`;
+}
 
 type ExerciseCardProps = {
   exercise: WorkoutExerciseFull;
@@ -14,6 +35,7 @@ type ExerciseCardProps = {
   onRemoveSet: (setId: string) => void;
   onRemoveExercise: () => void;
   onUpdateRestSeconds: (seconds: number) => void;
+  onUpdateTargetReps: (min: number | null, max: number | null) => void;
 };
 
 export function ExerciseCard({
@@ -25,18 +47,31 @@ export function ExerciseCard({
   onRemoveSet,
   onRemoveExercise,
   onUpdateRestSeconds,
+  onUpdateTargetReps,
 }: ExerciseCardProps) {
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const [editingRest, setEditingRest] = useState(false);
+  const [editingRepGoal, setEditingRepGoal] = useState(false);
+  const [repGoalInput, setRepGoalInput] = useState(formatRepRange(exercise.targetRepsMin, exercise.targetRepsMax));
   const [localRestSeconds, setLocalRestSeconds] = useState(exercise.restSeconds);
 
   useEffect(() => {
     setLocalRestSeconds(exercise.restSeconds);
   }, [exercise.restSeconds]);
 
+  useEffect(() => {
+    setRepGoalInput(formatRepRange(exercise.targetRepsMin, exercise.targetRepsMax));
+  }, [exercise.targetRepsMin, exercise.targetRepsMax]);
+
   const handleUpdateRest = (newVal: number) => {
     setLocalRestSeconds(newVal);
     onUpdateRestSeconds(newVal);
+  };
+
+  const handleSaveRepGoal = () => {
+    const { min, max } = parseRepRange(repGoalInput);
+    onUpdateTargetReps(min, max);
+    setEditingRepGoal(false);
   };
 
   return (
@@ -48,16 +83,32 @@ export function ExerciseCard({
         </Pressable>
       </View>
 
-      {/* Rest time badge */}
-      <Pressable
-        onPress={() => setEditingRest(!editingRest)}
-        className="self-start mb-2 flex-row items-center rounded-full bg-background-100 px-3 py-1"
-      >
-        <Ionicons name="timer-outline" size={14} color="rgb(163, 163, 163)" />
-        <Text className="ml-1 text-xs text-foreground-muted">
-          {localRestSeconds}s rest
-        </Text>
-      </Pressable>
+      {/* Badges row */}
+      <View className="flex-row items-center gap-2 mb-2">
+        {/* Rest time badge */}
+        <Pressable
+          onPress={() => setEditingRest(!editingRest)}
+          className="flex-row items-center rounded-full bg-background-100 px-3 py-1"
+        >
+          <Ionicons name="timer-outline" size={14} color="rgb(163, 163, 163)" />
+          <Text className="ml-1 text-xs text-foreground-muted">
+            {localRestSeconds}s rest
+          </Text>
+        </Pressable>
+
+        {/* Rep goal badge */}
+        <Pressable
+          onPress={() => setEditingRepGoal(!editingRepGoal)}
+          className="flex-row items-center rounded-full bg-background-100 px-3 py-1"
+        >
+          <Ionicons name="fitness-outline" size={14} color="rgb(163, 163, 163)" />
+          <Text className="ml-1 text-xs text-foreground-muted">
+            {exercise.targetRepsMin != null && exercise.targetRepsMax != null
+              ? `Goal: ${formatRepRange(exercise.targetRepsMin, exercise.targetRepsMax)} reps`
+              : 'Set rep goal'}
+          </Text>
+        </Pressable>
+      </View>
 
       {/* Rest time editor */}
       {editingRest && (
@@ -77,6 +128,36 @@ export function ExerciseCard({
           >
             <Text className="text-sm text-foreground-muted">+15s</Text>
           </Pressable>
+        </View>
+      )}
+
+      {/* Rep goal editor */}
+      {editingRepGoal && (
+        <View className="flex-row items-center gap-2 mb-2">
+          <TextInput
+            className="w-24 rounded-lg bg-background-100 px-3 py-2 text-center text-sm text-foreground"
+            placeholder="8-12"
+            placeholderTextColor="rgb(115, 115, 115)"
+            keyboardType="number-pad"
+            value={repGoalInput}
+            onChangeText={setRepGoalInput}
+            onSubmitEditing={handleSaveRepGoal}
+          />
+          <Pressable onPress={handleSaveRepGoal} className="rounded-lg bg-primary px-3 py-1.5">
+            <Text className="text-sm font-medium text-background">Save</Text>
+          </Pressable>
+          {exercise.targetRepsMin != null && (
+            <Pressable
+              onPress={() => {
+                onUpdateTargetReps(null, null);
+                setRepGoalInput('');
+                setEditingRepGoal(false);
+              }}
+              className="rounded-lg bg-background-100 px-3 py-1.5"
+            >
+              <Text className="text-xs text-foreground-muted">Clear</Text>
+            </Pressable>
+          )}
         </View>
       )}
 
@@ -107,6 +188,8 @@ export function ExerciseCard({
           previousSet={previousSets?.[index]}
           setNumber={set.setNumber}
           isStrength={isStrength}
+          targetRepsMin={exercise.targetRepsMin}
+          targetRepsMax={exercise.targetRepsMax}
           onSave={(data) => onSaveSet(set.id, data)}
           onRemove={() => onRemoveSet(set.id)}
         />

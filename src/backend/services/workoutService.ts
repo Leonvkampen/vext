@@ -27,16 +27,18 @@ export async function addExerciseToWorkout(
   db: SQLite.SQLiteDatabase,
   workoutId: string,
   exerciseId: string,
-  restSeconds?: number
+  restSeconds?: number,
+  targetRepsMin?: number | null,
+  targetRepsMax?: number | null
 ): Promise<WorkoutExercise> {
   if (restSeconds != null) {
-    return workoutExercise.addToWorkout(db, workoutId, exerciseId, restSeconds);
+    return workoutExercise.addToWorkout(db, workoutId, exerciseId, restSeconds, targetRepsMin, targetRepsMax);
   }
   const ex = await exercise.getById(db, exerciseId);
   const resolvedRest = ex
     ? (ex.restSeconds ?? getDefaultRestSeconds(ex.category))
     : APP_CONFIG.defaults.restSeconds.strength;
-  return workoutExercise.addToWorkout(db, workoutId, exerciseId, resolvedRest);
+  return workoutExercise.addToWorkout(db, workoutId, exerciseId, resolvedRest, targetRepsMin, targetRepsMax);
 }
 
 export async function updateWorkoutExerciseRestSeconds(
@@ -45,6 +47,15 @@ export async function updateWorkoutExerciseRestSeconds(
   restSeconds: number
 ): Promise<void> {
   return workoutExercise.updateRestSeconds(db, workoutExerciseId, restSeconds);
+}
+
+export async function updateExerciseTargetReps(
+  db: SQLite.SQLiteDatabase,
+  workoutExerciseId: string,
+  targetRepsMin: number | null,
+  targetRepsMax: number | null
+): Promise<void> {
+  return workoutExercise.updateTargetReps(db, workoutExerciseId, targetRepsMin, targetRepsMax);
 }
 
 export async function logSet(
@@ -249,7 +260,7 @@ export async function repeatWorkout(
   const newWorkout = await startWorkout(db, source.workoutTypeId, generatedName);
 
   for (const ex of source.exercises) {
-    const newExercise = await addExerciseToWorkout(db, newWorkout.id, ex.exerciseId, ex.restSeconds);
+    const newExercise = await addExerciseToWorkout(db, newWorkout.id, ex.exerciseId, ex.restSeconds, ex.targetRepsMin, ex.targetRepsMax);
     // Pre-create the same number of empty sets as the source exercise had
     for (let i = 0; i < ex.sets.length; i++) {
       await workoutSet.add(db, newExercise.id);

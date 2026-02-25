@@ -11,6 +11,8 @@ interface WorkoutExerciseRow {
   exercise_id: string;
   sort_order: number;
   rest_seconds: number;
+  target_reps_min: number | null;
+  target_reps_max: number | null;
   notes: string | null;
   created_at: string;
 }
@@ -27,6 +29,8 @@ function mapRow(row: WorkoutExerciseRow): WorkoutExercise {
     exerciseId: row.exercise_id,
     sortOrder: row.sort_order,
     restSeconds: row.rest_seconds,
+    targetRepsMin: row.target_reps_min,
+    targetRepsMax: row.target_reps_max,
     notes: row.notes,
     createdAt: row.created_at,
   };
@@ -45,22 +49,26 @@ export async function addToWorkout(
   db: SQLite.SQLiteDatabase,
   workoutId: string,
   exerciseId: string,
-  restSeconds: number
+  restSeconds: number,
+  targetRepsMin?: number | null,
+  targetRepsMax?: number | null
 ): Promise<WorkoutExercise> {
   const id = Crypto.randomUUID();
   await db.runAsync(
-    `INSERT INTO workout_exercises (id, workout_id, exercise_id, sort_order, rest_seconds, created_at)
+    `INSERT INTO workout_exercises (id, workout_id, exercise_id, sort_order, rest_seconds, target_reps_min, target_reps_max, created_at)
      VALUES (
        ?, ?, ?,
        COALESCE((SELECT MAX(sort_order) + 1 FROM workout_exercises WHERE workout_id = ?), 0),
-       ?,
+       ?, ?, ?,
        datetime('now')
      )`,
     id,
     workoutId,
     exerciseId,
     workoutId,
-    restSeconds
+    restSeconds,
+    targetRepsMin ?? null,
+    targetRepsMax ?? null
   );
   const row = await db.getFirstAsync<WorkoutExerciseRow>(
     `SELECT * FROM workout_exercises WHERE id = ?`,
@@ -112,6 +120,20 @@ export async function updateRestSeconds(
   await db.runAsync(
     `UPDATE workout_exercises SET rest_seconds = ? WHERE id = ?`,
     restSeconds,
+    id
+  );
+}
+
+export async function updateTargetReps(
+  db: SQLite.SQLiteDatabase,
+  id: string,
+  targetRepsMin: number | null,
+  targetRepsMax: number | null
+): Promise<void> {
+  await db.runAsync(
+    `UPDATE workout_exercises SET target_reps_min = ?, target_reps_max = ? WHERE id = ?`,
+    targetRepsMin,
+    targetRepsMax,
     id
   );
 }

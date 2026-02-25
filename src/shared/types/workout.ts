@@ -36,6 +36,8 @@ export interface WorkoutExercise {
   exerciseId: string;
   sortOrder: number;
   restSeconds: number;
+  targetRepsMin: number | null;
+  targetRepsMax: number | null;
   notes: string | null;
   createdAt: string;
 }

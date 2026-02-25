@@ -84,6 +84,13 @@ const migrations: Migration[] = [
       ALTER TABLE exercises ADD COLUMN rest_seconds INTEGER DEFAULT NULL;
     `);
   },
+  // v2 -> v3: Add target rep range to workout_exercises
+  async (db) => {
+    await db.execAsync(`
+      ALTER TABLE workout_exercises ADD COLUMN target_reps_min INTEGER DEFAULT NULL;
+      ALTER TABLE workout_exercises ADD COLUMN target_reps_max INTEGER DEFAULT NULL;
+    `);
+  },
 ];
 
 export async function runMigrations(db: SQLite.SQLiteDatabase): Promise<void> {
