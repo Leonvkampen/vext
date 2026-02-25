@@ -1,3 +1,4 @@
+/** Workouts screen - paginated workout history with session details and continue option. */
 import React, { useMemo, useState } from 'react';
 import { View, Text, FlatList, ActivityIndicator, RefreshControl, Modal, ScrollView, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

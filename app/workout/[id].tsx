@@ -1,3 +1,4 @@
+/** Active workout screen - log sets, manage exercises, and complete/discard a workout. */
 import React, { useState } from 'react';
 import { View, Text, FlatList, Pressable, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';

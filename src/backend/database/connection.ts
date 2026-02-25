@@ -1,3 +1,4 @@
+/** Database connection - initializes expo-sqlite and runs migrations on first load. */
 import * as SQLite from 'expo-sqlite';
 import { APP_CONFIG } from '@config/app';
 import { runMigrations } from './migrations';

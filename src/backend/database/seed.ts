@@ -1,3 +1,4 @@
+/** Database seed - populates default workout types and exercises on first run. */
 import type * as SQLite from 'expo-sqlite';
 import * as Crypto from 'expo-crypto';
 import { SEED_EXERCISES } from '@shared/constants/exercises';

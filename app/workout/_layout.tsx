@@ -1,3 +1,4 @@
+/** Workout layout - Stack navigator wrapper for the active workout screens. */
 import React from 'react';
 import { Stack } from 'expo-router';
 

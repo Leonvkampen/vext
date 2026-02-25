@@ -1,3 +1,4 @@
+/** Progress screen - charts and stats for volume trends, workout frequency, and personal records. */
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useQuery } from '@tanstack/react-query';

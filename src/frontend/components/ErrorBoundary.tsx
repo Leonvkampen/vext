@@ -1,3 +1,4 @@
+/** ErrorBoundary - catches React render errors and displays a fallback UI. */
 import React, { Component } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

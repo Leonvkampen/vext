@@ -1,3 +1,4 @@
+/** Tabs layout - defines the bottom tab navigation structure and tab icons. */
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { TabBar } from '@frontend/navigation/TabBar';

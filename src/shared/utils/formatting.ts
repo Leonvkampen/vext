@@ -1,3 +1,4 @@
+/** Formatting utils - date formatting, duration display, and relative time helpers. */
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns';
 import type { UnitSystem } from '@shared/types/settings';
 

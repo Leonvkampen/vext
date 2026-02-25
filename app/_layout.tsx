@@ -1,3 +1,4 @@
+/** Root layout - wraps the app with providers (GestureHandler, QueryClient, Database, SafeArea). */
 import '../global.css';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View, Text } from 'react-native';

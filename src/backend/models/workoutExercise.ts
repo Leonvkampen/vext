@@ -1,3 +1,4 @@
+/** WorkoutExercise model - manages exercises within a workout (add, remove, reorder, update settings). */
 import type * as SQLite from 'expo-sqlite';
 import * as Crypto from 'expo-crypto';
 import {

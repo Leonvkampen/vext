@@ -1,3 +1,4 @@
+/** Default exercises - seed data for the built-in exercise library. */
 import { ExerciseCategory, MuscleGroup, Equipment, type ExerciseSeed } from '@shared/types/exercise';
 
 export const SEED_EXERCISES: ExerciseSeed[] = [

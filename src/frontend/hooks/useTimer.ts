@@ -1,3 +1,4 @@
+/** Timer hook - Zustand store for the rest timer countdown with auto-start. */
 import { create } from 'zustand';
 import * as Haptics from 'expo-haptics';
 import * as timerService from '@backend/services/timerService';

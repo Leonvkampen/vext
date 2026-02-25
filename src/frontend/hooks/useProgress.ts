@@ -1,3 +1,4 @@
+/** Progress hooks - React Query queries for stats, streaks, PRs, and volume trends. */
 import { useQuery } from '@tanstack/react-query';
 import * as progressService from '@backend/services/progressService';
 import { useDatabase } from '@frontend/hooks/useDatabase';

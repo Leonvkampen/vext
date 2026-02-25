@@ -1,3 +1,4 @@
+/** Query client - shared React Query client instance with default config. */
 import { QueryClient } from '@tanstack/react-query';
 
 export const queryClient = new QueryClient({

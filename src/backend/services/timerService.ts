@@ -1,3 +1,4 @@
+/** Timer service - default rest timer durations per exercise category. */
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';

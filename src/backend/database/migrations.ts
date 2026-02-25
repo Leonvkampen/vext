@@ -1,3 +1,4 @@
+/** Database migrations - schema versioning via PRAGMA user_version with sequential upgrades. */
 import type * as SQLite from 'expo-sqlite';
 import { APP_CONFIG } from '@config/app';
 

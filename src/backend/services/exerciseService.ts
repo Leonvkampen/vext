@@ -1,3 +1,4 @@
+/** Exercise service - business logic for creating, updating, and archiving exercises. */
 import type * as SQLite from 'expo-sqlite';
 import * as exerciseModel from '@backend/models/exercise';
 import type { Exercise, ExerciseCategory, Equipment, MuscleGroup } from '@shared/types/exercise';

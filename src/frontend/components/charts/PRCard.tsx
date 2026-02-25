@@ -1,3 +1,4 @@
+/** PRCard - displays a personal record with exercise name and best lift. */
 import React from 'react';
 import { View, Text } from 'react-native';
 

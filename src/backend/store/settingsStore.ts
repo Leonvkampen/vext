@@ -1,3 +1,4 @@
+/** Settings store - Zustand store for user preferences (units, theme). */
 import { create } from 'zustand';
 import { Platform, NativeModules } from 'react-native';
 import type * as SQLite from 'expo-sqlite';

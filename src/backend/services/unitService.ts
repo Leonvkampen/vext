@@ -1,3 +1,4 @@
+/** Unit service - weight/distance conversion between metric and imperial. */
 import type { UnitSystem } from '@shared/types/settings';
 
 export function kgToLb(kg: number): number {

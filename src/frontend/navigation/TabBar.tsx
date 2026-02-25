@@ -1,3 +1,4 @@
+/** TabBar - custom bottom tab navigation bar with centered action button. */
 import React from 'react';
 import { View, Pressable, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

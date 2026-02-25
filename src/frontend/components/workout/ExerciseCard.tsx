@@ -1,3 +1,4 @@
+/** ExerciseCard - displays an exercise with its sets, rest timer, and rep goal controls. */
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

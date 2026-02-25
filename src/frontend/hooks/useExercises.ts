@@ -1,3 +1,4 @@
+/** Exercise hooks - React Query mutations for creating, updating, and archiving exercises. */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import * as exerciseModel from '@backend/models/exercise';

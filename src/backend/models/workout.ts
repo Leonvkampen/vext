@@ -1,3 +1,4 @@
+/** Workout model - CRUD operations for the workouts table (create, complete, discard, reopen). */
 import type * as SQLite from 'expo-sqlite';
 import * as Crypto from 'expo-crypto';
 import { Workout, WorkoutStatus } from '@shared/types/workout';

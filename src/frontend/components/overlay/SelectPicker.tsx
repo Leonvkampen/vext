@@ -1,3 +1,4 @@
+/** SelectPicker - generic bottom sheet single-select picker. */
 import React from 'react';
 import { Modal, View, Text, Pressable, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

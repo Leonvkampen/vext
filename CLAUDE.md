@@ -4,9 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-- `npm start` — Start dev client (`expo start --dev-client`)
-- `npx expo run:android` — Build and run native Android debug build
-- `npx expo run:ios` — Build and run native iOS debug build
+- `pnpm start` — Start dev client (`expo start --dev-client`)
+- `pnpm start -- --clear` — Start with Metro cache cleared (use after dependency changes)
+- `pnpm android` — Build and run native Android debug build
+- `pnpm ios` — Build and run native iOS debug build
 
 No test runner or linter is configured yet.
 
@@ -27,6 +28,14 @@ Expo SDK 54 React Native app (New Architecture enabled) with React 19 and TypeSc
 - `@backend/*` → `src/backend/*`
 - `@shared/*` → `src/shared/*`
 - `@config/*` → `src/config/*`
+
+## Database
+
+Uses expo-sqlite with manual migrations via `PRAGMA user_version`. Schema version is tracked in `src/config/app.ts`. Migrations are in `src/backend/database/migrations.ts`.
+
+Data flow: models (`src/backend/models/`) → services (`src/backend/services/`) → React Query hooks (`src/frontend/hooks/`) → components.
+
+When adding a DB column: add migration, bump `schemaVersion` in `src/config/app.ts`, update model, type, and service.
 
 ## Styling Conventions
 

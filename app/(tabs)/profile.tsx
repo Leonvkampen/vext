@@ -1,3 +1,4 @@
+/** Profile screen - user settings for units (metric/imperial) and app info. */
 import React, { useState, useEffect } from 'react';
 import { View, Text, Switch, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

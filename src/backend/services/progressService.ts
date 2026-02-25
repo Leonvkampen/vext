@@ -1,3 +1,4 @@
+/** Progress service - computes stats, streaks, personal records, and volume trends. */
 import type * as SQLite from 'expo-sqlite';
 
 export interface PersonalRecords {

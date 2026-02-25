@@ -1,3 +1,4 @@
+/** New workout screen - select a workout type to start a new workout session. */
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, FlatList, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';

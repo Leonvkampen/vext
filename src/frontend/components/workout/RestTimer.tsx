@@ -1,3 +1,4 @@
+/** RestTimer - floating countdown timer overlay that appears after saving a set. */
 import React, { useEffect } from 'react';
 import { Modal, View, Text, Pressable } from 'react-native';
 import { useTimerStore } from '@frontend/hooks/useTimer';

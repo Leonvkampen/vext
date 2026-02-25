@@ -1,3 +1,4 @@
+/** Repeat workout screen - start a new workout pre-populated from a previous session. */
 import React from 'react';
 import { View, Text, FlatList, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';

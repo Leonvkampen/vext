@@ -1,3 +1,4 @@
+/** ConfirmDialog - reusable confirmation modal with confirm/cancel actions. */
 import React from 'react';
 import { Modal, View, Text, Pressable } from 'react-native';
 

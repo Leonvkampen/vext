@@ -1,3 +1,4 @@
+/** Equipment constants - enum values and display labels for exercise equipment types. */
 import { Equipment } from '@shared/types/exercise';
 
 export const EQUIPMENT_LABELS: Record<Equipment, string> = {

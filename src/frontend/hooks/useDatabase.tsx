@@ -1,3 +1,4 @@
+/** Database provider and hook - provides SQLite database instance via React context. */
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type * as SQLite from 'expo-sqlite';
 import { getDatabase } from '@backend/database/connection';

@@ -1,3 +1,4 @@
+/** Home screen - dashboard with today's stats, streaks, weekly summary, and recent workouts. */
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';

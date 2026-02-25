@@ -1,3 +1,4 @@
+/** App config - schema version, default values, and app-wide constants. */
 export const APP_CONFIG = {
   database: {
     name: 'vext.db',

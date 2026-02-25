@@ -1,3 +1,4 @@
+/** Validation utils - input validation for weight, reps, duration, and distance values. */
 import { APP_CONFIG } from '@config/app';
 
 const { validation } = APP_CONFIG;

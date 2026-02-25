@@ -1,3 +1,4 @@
+/** Workout hooks - React Query mutations and queries for the active workout lifecycle. */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as workoutService from '@backend/services/workoutService';
 import { useDatabase } from '@frontend/hooks/useDatabase';

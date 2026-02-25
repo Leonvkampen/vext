@@ -1,3 +1,4 @@
+/** ExercisePicker - modal for browsing and selecting exercises to add to a workout. */
 import React, { useState, useMemo } from 'react';
 import { Modal, View, Text, TextInput, FlatList, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

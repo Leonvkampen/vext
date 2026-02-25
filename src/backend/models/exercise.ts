@@ -1,3 +1,4 @@
+/** Exercise model - CRUD operations for the exercises table (default + custom). */
 import type * as SQLite from 'expo-sqlite';
 import * as Crypto from 'expo-crypto';
 import {

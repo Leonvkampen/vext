@@ -1,3 +1,4 @@
+/** ExerciseForm - full-screen modal for creating and editing exercises. */
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TextInput, Pressable, ScrollView, Alert } from 'react-native';
 import { cn } from '@frontend/lib/utils';

@@ -1,3 +1,4 @@
+/** WorkoutType model - predefined workout categories (Strength Training, etc.). */
 import type * as SQLite from 'expo-sqlite';
 import { WorkoutType, WorkoutFieldDefinition } from '@shared/types/workout';
 

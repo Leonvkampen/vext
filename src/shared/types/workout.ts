@@ -1,3 +1,4 @@
+/** Workout types - TypeScript interfaces for Workout, WorkoutExercise, WorkoutSet, and related types. */
 export enum WorkoutStatus {
   InProgress = 'in_progress',
   Completed = 'completed',

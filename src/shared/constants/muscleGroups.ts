@@ -1,3 +1,4 @@
+/** Muscle group constants - enum values and display labels for all muscle groups. */
 import { MuscleGroup } from '@shared/types/exercise';
 
 export const MUSCLE_GROUP_LABELS: Record<MuscleGroup, string> = {

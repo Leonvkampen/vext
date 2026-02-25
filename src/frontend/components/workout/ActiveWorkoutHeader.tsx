@@ -1,3 +1,4 @@
+/** ActiveWorkoutHeader - displays workout name, type, and elapsed time during an active workout. */
 import React, { useState, useEffect } from 'react';
 import { View, Text } from 'react-native';
 import { formatTimerDisplay } from '@shared/utils/formatting';

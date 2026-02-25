@@ -1,3 +1,4 @@
+/** Workout service - orchestrates workout lifecycle, set logging, and exercise management. */
 import type * as SQLite from 'expo-sqlite';
 import * as workout from '@backend/models/workout';
 import * as workoutExercise from '@backend/models/workoutExercise';

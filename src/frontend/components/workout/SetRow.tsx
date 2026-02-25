@@ -1,3 +1,4 @@
+/** SetRow - editable row for a single set with weight, reps, and color-coded rep feedback. */
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

@@ -1,3 +1,4 @@
+/** WorkoutCard - summary card for a completed workout shown in history and dashboard. */
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

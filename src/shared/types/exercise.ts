@@ -1,3 +1,4 @@
+/** Exercise types - TypeScript interfaces for Exercise, ExerciseCategory, MuscleGroup, Equipment. */
 export enum MuscleGroup {
   Chest = 'chest',
   Back = 'back',

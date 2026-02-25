@@ -1,3 +1,4 @@
+/** EmptyState - reusable placeholder component with icon, message, and optional action button. */
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

@@ -1,3 +1,4 @@
+/** Exercises screen - browse, search, create, edit, and archive exercises. */
 import React, { useState, useMemo } from 'react';
 import { View, Text, TextInput, FlatList, Pressable, ScrollView, Modal, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

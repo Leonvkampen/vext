@@ -1,3 +1,4 @@
+/** WorkoutSet model - manages individual sets within a workout exercise (add, update, remove). */
 import type * as SQLite from 'expo-sqlite';
 import * as Crypto from 'expo-crypto';
 import { WorkoutSet } from '@shared/types/workout';

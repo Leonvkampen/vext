@@ -1,3 +1,4 @@
+/** History hooks - React Query queries for workout history, summaries, and previous sets. */
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import * as workoutService from '@backend/services/workoutService';
 import { useDatabase } from '@frontend/hooks/useDatabase';

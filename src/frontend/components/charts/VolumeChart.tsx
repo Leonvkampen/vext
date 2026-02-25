@@ -1,3 +1,4 @@
+/** VolumeChart - line chart showing total volume (weight x reps) over time. */
 import React from 'react';
 import { View, Text, useWindowDimensions } from 'react-native';
 import Svg, { Polyline, Line as SvgLine, Circle, Text as SvgText } from 'react-native-svg';

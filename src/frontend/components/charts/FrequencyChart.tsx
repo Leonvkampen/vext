@@ -1,3 +1,4 @@
+/** FrequencyChart - bar chart showing workout frequency over time. */
 import React from 'react';
 import { View, Text, useWindowDimensions } from 'react-native';
 import Svg, { Rect, Text as SvgText, Line as SvgLine } from 'react-native-svg';
