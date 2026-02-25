@@ -2,6 +2,7 @@
 import React from 'react';
 import { View, Text, useWindowDimensions } from 'react-native';
 import Svg, { Polyline, Line as SvgLine, Circle, Text as SvgText } from 'react-native-svg';
+import { formatCompactNumber } from '@shared/utils/formatting';
 
 type DataPoint = { week: string; volume: number };
 
@@ -53,7 +54,7 @@ export function VolumeChart({ data }: VolumeChartProps) {
           const val = Math.round(minVolume + (maxVolume - minVolume) * pct);
           return (
             <SvgText key={`label-${pct}`} x={padding.left - 8} y={y + 4} fontSize={10} fill="rgb(115, 115, 115)" textAnchor="end">
-              {val >= 1000 ? `${(val / 1000).toFixed(1)}k` : val}
+              {formatCompactNumber(val)}
             </SvgText>
           );
         })}

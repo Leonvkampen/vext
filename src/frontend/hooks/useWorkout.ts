@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as workoutService from '@backend/services/workoutService';
 import { useDatabase } from '@frontend/hooks/useDatabase';
 import type { WorkoutSetInput } from '@backend/models/workoutSet';
-import Toast from 'react-native-toast-message';
 import { useExerciseOrderStore } from '@frontend/hooks/useExerciseOrderStore';
 
 export function useActiveWorkout() {
@@ -34,9 +33,6 @@ export function useStartWorkout() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activeWorkout'] });
     },
-    onError: (error: Error) => {
-      Toast.show({ type: 'error', text1: 'Error', text2: error.message });
-    },
   });
 }
 
@@ -60,9 +56,6 @@ export function useLogSet(workoutId: string) {
       workoutService.logSet(db, workoutExerciseId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workout', workoutId] });
-    },
-    onError: (error: Error) => {
-      Toast.show({ type: 'error', text1: 'Invalid set', text2: error.message });
     },
   });
 }
@@ -131,9 +124,6 @@ export function useCompleteWorkout() {
       queryClient.invalidateQueries({ queryKey: ['volumeOverTime'] });
       queryClient.invalidateQueries({ queryKey: ['recentWorkouts'] });
     },
-    onError: (error: Error) => {
-      Toast.show({ type: 'error', text1: 'Error', text2: error.message });
-    },
   });
 }
 
@@ -157,9 +147,6 @@ export function useRepeatWorkout() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['activeWorkout'] });
     },
-    onError: (error: Error) => {
-      Toast.show({ type: 'error', text1: 'Error', text2: error.message });
-    },
   });
 }
 
@@ -176,9 +163,6 @@ export function useDeleteWorkout() {
       queryClient.invalidateQueries({ queryKey: ['currentStreak'] });
       queryClient.invalidateQueries({ queryKey: ['recentWorkouts'] });
     },
-    onError: (error: Error) => {
-      Toast.show({ type: 'error', text1: 'Error', text2: error.message });
-    },
   });
 }
 
@@ -194,9 +178,6 @@ export function useDeleteWorkouts() {
       queryClient.invalidateQueries({ queryKey: ['weeklyStats'] });
       queryClient.invalidateQueries({ queryKey: ['currentStreak'] });
       queryClient.invalidateQueries({ queryKey: ['recentWorkouts'] });
-    },
-    onError: (error: Error) => {
-      Toast.show({ type: 'error', text1: 'Error', text2: error.message });
     },
   });
 }

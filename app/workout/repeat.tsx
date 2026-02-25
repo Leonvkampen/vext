@@ -21,7 +21,7 @@ export default function RepeatWorkoutScreen() {
       const newWorkout = await repeatWorkout.mutateAsync(workoutId);
       router.replace(`/workout/${newWorkout.id}`);
     } catch {
-      // error toast handled by mutation
+      // error shown inline
     }
   };
 
@@ -37,6 +37,12 @@ export default function RepeatWorkoutScreen() {
       <Text className="px-4 mb-3 text-sm text-foreground-muted">
         Choose a completed workout to repeat its exercises
       </Text>
+
+      {repeatWorkout.error && (
+        <Text className="px-4 mb-2 text-xs text-destructive">
+          {(repeatWorkout.error as Error).message}
+        </Text>
+      )}
 
       {repeatWorkout.isPending && (
         <View className="absolute inset-0 z-10 items-center justify-center bg-background/80">

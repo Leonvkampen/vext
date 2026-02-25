@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { WorkoutSummary } from '@shared/types/workout';
-import { formatDate, formatDuration, formatVolume } from '@shared/utils/formatting';
+import { formatDate, formatDuration, formatVolume, parseUTCTimestamp } from '@shared/utils/formatting';
 import { useSettingsStore } from '@backend/store/settingsStore';
 
 type WorkoutCardProps = {
@@ -18,7 +18,7 @@ type WorkoutCardProps = {
 export function WorkoutCard({ workout, onPress, onRepeat, onContinue, onDelete, sessionCount }: WorkoutCardProps) {
   const units = useSettingsStore((s) => s.units);
   const duration = workout.completedAt
-    ? Math.floor((new Date(workout.completedAt).getTime() - new Date(workout.startedAt).getTime()) / 1000)
+    ? Math.floor((parseUTCTimestamp(workout.completedAt).getTime() - parseUTCTimestamp(workout.startedAt).getTime()) / 1000)
     : 0;
 
   return (

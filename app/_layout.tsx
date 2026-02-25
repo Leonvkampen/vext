@@ -7,7 +7,6 @@ import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
 import { GluestackUIProvider } from '@frontend/components/ui/gluestack-ui-provider';
 import { DatabaseProvider, useDatabaseStatus } from '@frontend/hooks/useDatabase';
 import { queryClient } from '@frontend/lib/queryClient';
@@ -108,7 +107,6 @@ export default function RootLayout() {
                 </AppInitializer>
               </ErrorBoundary>
               <StatusBar style="light" />
-              <Toast autoHide visibilityTime={3000} />
             </DatabaseProvider>
           </QueryClientProvider>
         </GestureHandlerRootView>

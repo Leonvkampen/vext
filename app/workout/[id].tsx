@@ -83,7 +83,7 @@ export default function ActiveWorkoutScreen() {
       await completeWorkout.mutateAsync(id!);
       router.replace('/(tabs)/workouts');
     } catch {
-      // error toast handled by mutation
+      // error shown inline near the Finish button
     }
   };
 
@@ -150,6 +150,11 @@ export default function ActiveWorkoutScreen() {
 
       {/* Bottom action bar */}
       <View className="bg-background border-t border-background-100 px-4 pb-8 pt-3">
+        {(completeWorkout.error || logSet.error) && (
+          <Text className="text-xs text-destructive text-center mb-2">
+            {(completeWorkout.error as Error)?.message || (logSet.error as Error)?.message}
+          </Text>
+        )}
         <View className="flex-row gap-3">
           <Pressable
             onPress={() => setShowDiscardConfirm(true)}

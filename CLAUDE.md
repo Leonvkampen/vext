@@ -51,3 +51,11 @@ When adding a DB column: add migration, bump `schemaVersion` in `src/config/app.
 - Only use inline `style` for truly dynamic values (e.g. computed colors, animated values)
 - SafeAreaView is handled once in the root layout (`app/_layout.tsx`) — do not add SafeAreaView in individual screens
 - React hooks must always be called before any early returns in components
+
+## Error Handling
+
+- **No toast notifications** — do not use `react-native-toast-message` or any toast library
+- **Inline validation errors** — show error messages directly in the UI near the relevant input or action button
+- For React Query mutations, use `mutation.error?.message` to display errors inline (e.g. red `<Text>` below a button or input)
+- All formatting must go through `src/shared/utils/formatting.ts` — never use inline formatting logic in components
+- Database timestamps are UTC (from SQLite `datetime('now')`) — always use `parseUTCTimestamp()` from `formatting.ts` when parsing them in the frontend

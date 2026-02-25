@@ -2,6 +2,11 @@
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns';
 import type { UnitSystem } from '@shared/types/settings';
 
+/** Parse a database timestamp (SQLite datetime('now') returns UTC without a suffix). */
+export function parseUTCTimestamp(timestamp: string): Date {
+  return new Date(timestamp.endsWith('Z') ? timestamp : timestamp + 'Z');
+}
+
 export function formatDuration(totalSeconds: number): string {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -31,18 +36,18 @@ export function formatDistance(meters: number, units: UnitSystem): string {
 }
 
 export function formatDate(isoString: string): string {
-  const date = new Date(isoString);
+  const date = parseUTCTimestamp(isoString);
   if (isToday(date)) return 'Today';
   if (isYesterday(date)) return 'Yesterday';
   return format(date, 'MMM d, yyyy');
 }
 
 export function formatTime(isoString: string): string {
-  return format(new Date(isoString), 'h:mm a');
+  return format(parseUTCTimestamp(isoString), 'h:mm a');
 }
 
 export function formatRelativeTime(isoString: string): string {
-  return formatDistanceToNow(new Date(isoString), { addSuffix: true });
+  return formatDistanceToNow(parseUTCTimestamp(isoString), { addSuffix: true });
 }
 
 export function formatVolume(kg: number, units: UnitSystem): string {
@@ -59,4 +64,9 @@ export function formatTimerDisplay(seconds: number): string {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+export function formatCompactNumber(value: number): string {
+  if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
+  return String(value);
 }

@@ -39,7 +39,7 @@ export default function NewWorkoutScreen() {
       });
       router.replace(`/workout/${workout.id}`);
     } catch {
-      // error toast handled by mutation
+      // error shown inline
     }
   };
 
@@ -168,6 +168,11 @@ export default function NewWorkoutScreen() {
       />
 
       <View className="absolute bottom-0 left-0 right-0 bg-background border-t border-background-100 px-4 pb-8 pt-4">
+        {startWorkout.error && (
+          <Text className="text-xs text-destructive text-center mb-2">
+            {(startWorkout.error as Error).message}
+          </Text>
+        )}
         <Pressable
           onPress={handleStart}
           disabled={!selectedType || startWorkout.isPending}

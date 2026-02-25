@@ -8,7 +8,7 @@ import { ConfirmDialog } from '@frontend/components/overlay/ConfirmDialog';
 import { useWorkoutHistory, useWorkoutGroupDetails } from '@frontend/hooks/useHistory';
 import { useRepeatWorkout, useDeleteWorkout, useDeleteWorkouts, useContinueWorkout, useForceContinueWorkout } from '@frontend/hooks/useWorkout';
 import { useRouter } from 'expo-router';
-import { formatDate, formatDuration } from '@shared/utils/formatting';
+import { formatDate, formatDuration, parseUTCTimestamp } from '@shared/utils/formatting';
 import { cn } from '@frontend/lib/utils';
 import type { WorkoutSummary, WorkoutGroup } from '@shared/types/workout';
 
@@ -72,7 +72,7 @@ export default function WorkoutsScreen() {
       const newWorkout = await repeatWorkout.mutateAsync(workoutId);
       router.replace(`/workout/${newWorkout.id}`);
     } catch {
-      // error toast handled by mutation
+      // error shown inline
     }
   };
 
@@ -188,7 +188,7 @@ export default function WorkoutsScreen() {
               <ScrollView className="flex-1 px-4 pt-4" contentContainerClassName="pb-10">
                 {groupDetails.map((session, idx) => {
                   const duration = session.completedAt
-                    ? Math.floor((new Date(session.completedAt).getTime() - new Date(session.startedAt).getTime()) / 1000)
+                    ? Math.floor((parseUTCTimestamp(session.completedAt).getTime() - parseUTCTimestamp(session.startedAt).getTime()) / 1000)
                     : 0;
 
                   return (

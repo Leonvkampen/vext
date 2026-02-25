@@ -1,7 +1,7 @@
 /** ActiveWorkoutHeader - displays workout name, type, and elapsed time during an active workout. */
 import React, { useState, useEffect } from 'react';
 import { View, Text } from 'react-native';
-import { formatTimerDisplay } from '@shared/utils/formatting';
+import { formatTimerDisplay, parseUTCTimestamp } from '@shared/utils/formatting';
 
 type ActiveWorkoutHeaderProps = {
   workoutName: string | null;
@@ -13,7 +13,7 @@ export function ActiveWorkoutHeader({ workoutName, workoutTypeName, startedAt }:
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
-    const start = new Date(startedAt).getTime();
+    const start = parseUTCTimestamp(startedAt).getTime();
     const update = () => setElapsed(Math.floor((Date.now() - start) / 1000));
     update();
     const interval = setInterval(update, 1000);
@@ -26,7 +26,7 @@ export function ActiveWorkoutHeader({ workoutName, workoutTypeName, startedAt }:
         {workoutName || workoutTypeName}
       </Text>
       <Text className="mt-1 text-sm text-primary font-medium">
-        {formatTimerDisplay(elapsed)}
+        Elapsed: {formatTimerDisplay(elapsed)}
       </Text>
     </View>
   );
