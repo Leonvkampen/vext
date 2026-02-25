@@ -82,8 +82,9 @@ export default function ActiveWorkoutScreen() {
     try {
       await completeWorkout.mutateAsync(id!);
       router.replace('/(tabs)/workouts');
-    } catch {
-      // error shown inline near the Finish button
+    } catch (e) {
+      // mutation errors shown inline via completeWorkout.error
+      if (__DEV__) console.warn('Complete workout failed:', e);
     }
   };
 
@@ -130,8 +131,8 @@ export default function ActiveWorkoutScreen() {
               exercise={item}
               isStrength={isStrength}
               previousSets={previousSetsMap?.get(item.exerciseId)}
-              onMoveUp={index > 0 ? () => handleMoveExercise(index, 'up') : undefined}
-              onMoveDown={index < exercises.length - 1 ? () => handleMoveExercise(index, 'down') : undefined}
+              onMoveUp={index > 0 && !reorderExercises.isPending ? () => handleMoveExercise(index, 'up') : undefined}
+              onMoveDown={index < exercises.length - 1 && !reorderExercises.isPending ? () => handleMoveExercise(index, 'down') : undefined}
               onAddSet={() => {
                 logSet.mutate({ workoutExerciseId: item.id, data: {} });
               }}

@@ -85,10 +85,10 @@ export const ExerciseCard = React.memo(function ExerciseCard({
         <View className="flex-row items-center flex-1 gap-2">
           {(onMoveUp || onMoveDown) && (
             <View className="flex-row items-center gap-2">
-              <Pressable onPressIn={onMoveUp} disabled={!onMoveUp} className="p-1.5">
+              <Pressable onPress={onMoveUp} disabled={!onMoveUp} className="p-1.5">
                 <Ionicons name="chevron-up" size={18} color={onMoveUp ? 'rgb(163, 163, 163)' : 'rgb(64, 64, 64)'} />
               </Pressable>
-              <Pressable onPressIn={onMoveDown} disabled={!onMoveDown} className="p-1.5">
+              <Pressable onPress={onMoveDown} disabled={!onMoveDown} className="p-1.5">
                 <Ionicons name="chevron-down" size={18} color={onMoveDown ? 'rgb(163, 163, 163)' : 'rgb(64, 64, 64)'} />
               </Pressable>
             </View>

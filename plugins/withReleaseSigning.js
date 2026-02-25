@@ -29,16 +29,24 @@ function withReleaseSigning(config) {
     ].join('\n');
 
     // Add release signing config after the debug signing config block
+    const beforeSigning = contents;
     contents = contents.replace(
       /(signingConfigs\s*\{\s*debug\s*\{[^}]*\})\s*(\})/,
       `$1\n${releaseSigningConfig}\n    $2`
     );
+    if (contents === beforeSigning) {
+      throw new Error('withReleaseSigning: Failed to inject release signing config into build.gradle');
+    }
 
     // In the buildTypes release block, switch to the release signing config
+    const beforeBuildType = contents;
     contents = contents.replace(
       /(buildTypes\s*\{[\s\S]*?release\s*\{[^}]*?)signingConfig signingConfigs\.debug/,
       '$1signingConfig signingConfigs.release'
     );
+    if (contents === beforeBuildType) {
+      throw new Error('withReleaseSigning: Failed to update release buildType signing config in build.gradle');
+    }
 
     config.modResults.contents = contents;
     return config;

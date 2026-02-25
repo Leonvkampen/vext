@@ -67,6 +67,9 @@ export function formatTimerDisplay(seconds: number): string {
 }
 
 export function formatCompactNumber(value: number): string {
-  if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
+  const abs = Math.abs(value);
+  const sign = value < 0 ? '-' : '';
+  if (abs >= 1_000_000) return `${sign}${(abs / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1000) return `${sign}${(abs / 1000).toFixed(1)}k`;
   return String(value);
 }

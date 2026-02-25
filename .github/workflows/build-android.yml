@@ -10,14 +10,14 @@ on:
     tags: ['v*']
   workflow_dispatch:
 
-# Allow creating GitHub Releases
-permissions:
-  contents: write
+permissions: {}
 
 jobs:
   build:
     name: Build APK
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       # ── Determine which environment we're building for ──
@@ -72,7 +72,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          key: gradle-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'app.json') }}
           restore-keys: gradle-${{ runner.os }}-
 
       - name: Install dependencies

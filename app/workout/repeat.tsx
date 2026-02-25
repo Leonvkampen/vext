@@ -20,8 +20,9 @@ export default function RepeatWorkoutScreen() {
     try {
       const newWorkout = await repeatWorkout.mutateAsync(workoutId);
       router.replace(`/workout/${newWorkout.id}`);
-    } catch {
-      // error shown inline
+    } catch (e) {
+      // mutation errors shown inline via repeatWorkout.error
+      if (__DEV__) console.warn('Repeat workout failed:', e);
     }
   };
 
@@ -40,7 +41,7 @@ export default function RepeatWorkoutScreen() {
 
       {repeatWorkout.error && (
         <Text className="px-4 mb-2 text-xs text-destructive">
-          {(repeatWorkout.error as Error).message}
+          {(repeatWorkout.error as Error)?.message || 'An error occurred'}
         </Text>
       )}
 

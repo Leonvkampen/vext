@@ -38,8 +38,9 @@ export default function NewWorkoutScreen() {
         name: workoutName.trim() || undefined,
       });
       router.replace(`/workout/${workout.id}`);
-    } catch {
-      // error shown inline
+    } catch (e) {
+      // mutation errors shown inline via startWorkout.error
+      if (__DEV__) console.warn('Start workout failed:', e);
     }
   };
 
@@ -170,7 +171,7 @@ export default function NewWorkoutScreen() {
       <View className="absolute bottom-0 left-0 right-0 bg-background border-t border-background-100 px-4 pb-8 pt-4">
         {startWorkout.error && (
           <Text className="text-xs text-destructive text-center mb-2">
-            {(startWorkout.error as Error).message}
+            {(startWorkout.error as Error)?.message || 'An error occurred'}
           </Text>
         )}
         <Pressable

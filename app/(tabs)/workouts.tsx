@@ -71,8 +71,9 @@ export default function WorkoutsScreen() {
     try {
       const newWorkout = await repeatWorkout.mutateAsync(workoutId);
       router.replace(`/workout/${newWorkout.id}`);
-    } catch {
-      // error shown inline
+    } catch (e) {
+      // mutation errors shown inline via repeatWorkout.error
+      if (__DEV__) console.warn('Repeat workout failed:', e);
     }
   };
 
