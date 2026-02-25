@@ -9,11 +9,12 @@ type WorkoutCardProps = {
   workout: WorkoutSummary;
   onPress: () => void;
   onRepeat?: () => void;
+  onContinue?: () => void;
   onDelete?: () => void;
   sessionCount?: number;
 };
 
-export function WorkoutCard({ workout, onPress, onRepeat, onDelete, sessionCount }: WorkoutCardProps) {
+export function WorkoutCard({ workout, onPress, onRepeat, onContinue, onDelete, sessionCount }: WorkoutCardProps) {
   const units = useSettingsStore((s) => s.units);
   const duration = workout.completedAt
     ? Math.floor((new Date(workout.completedAt).getTime() - new Date(workout.startedAt).getTime()) / 1000)
@@ -58,6 +59,18 @@ export function WorkoutCard({ workout, onPress, onRepeat, onDelete, sessionCount
             </View>
           )}
         </View>
+        {onContinue && (
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation();
+              onContinue();
+            }}
+            className="ml-2 rounded-lg bg-background-100 px-2.5 py-1.5 flex-row items-center gap-1"
+          >
+            <Ionicons name="play-outline" size={14} color="rgb(52, 211, 153)" />
+            <Text className="text-xs font-medium text-primary">Continue</Text>
+          </Pressable>
+        )}
         {onRepeat && (
           <Pressable
             onPress={(e) => {

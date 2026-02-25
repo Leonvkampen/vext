@@ -5,7 +5,7 @@ import { WorkoutCard } from '@frontend/components/workout/WorkoutCard';
 import { EmptyState } from '@frontend/components/EmptyState';
 import { ConfirmDialog } from '@frontend/components/overlay/ConfirmDialog';
 import { useWorkoutHistory, useWorkoutGroupDetails } from '@frontend/hooks/useHistory';
-import { useRepeatWorkout, useDeleteWorkout, useDeleteWorkouts } from '@frontend/hooks/useWorkout';
+import { useRepeatWorkout, useDeleteWorkout, useDeleteWorkouts, useContinueWorkout, useForceContinueWorkout } from '@frontend/hooks/useWorkout';
 import { useRouter } from 'expo-router';
 import { formatDate, formatDuration } from '@shared/utils/formatting';
 import { cn } from '@frontend/lib/utils';
@@ -45,9 +45,13 @@ export default function WorkoutsScreen() {
   const deleteWorkout = useDeleteWorkout();
   const deleteWorkouts = useDeleteWorkouts();
 
+  const continueWorkout = useContinueWorkout();
+  const forceContinueWorkout = useForceContinueWorkout();
+
   const [selectedGroup, setSelectedGroup] = useState<WorkoutGroup | null>(null);
   const [confirmDeleteGroup, setConfirmDeleteGroup] = useState<WorkoutGroup | null>(null);
   const [confirmDeleteSessionId, setConfirmDeleteSessionId] = useState<string | null>(null);
+  const [confirmContinueId, setConfirmContinueId] = useState<string | null>(null);
 
   const selectedIds = useMemo(
     () => selectedGroup?.sessions.map((s) => s.id) ?? [],
@@ -85,6 +89,24 @@ export default function WorkoutsScreen() {
     if (selectedGroup && selectedGroup.sessions.length <= 1) {
       setSelectedGroup(null);
     }
+  };
+
+  const handleContinue = async (workoutId: string) => {
+    const result = await continueWorkout.mutateAsync(workoutId);
+    if (result.success) {
+      setSelectedGroup(null);
+      router.replace(`/workout/${workoutId}`);
+    } else {
+      setConfirmContinueId(workoutId);
+    }
+  };
+
+  const handleForceContinue = async () => {
+    if (!confirmContinueId) return;
+    await forceContinueWorkout.mutateAsync(confirmContinueId);
+    setConfirmContinueId(null);
+    setSelectedGroup(null);
+    router.replace(`/workout/${confirmContinueId}`);
   };
 
   return (
@@ -180,6 +202,13 @@ export default function WorkoutsScreen() {
                             {formatDuration(duration)}
                           </Text>
                           <Pressable
+                            onPress={() => handleContinue(session.id)}
+                            className="rounded-lg bg-background-100 px-2 py-1 flex-row items-center gap-1"
+                          >
+                            <Ionicons name="play-outline" size={12} color="rgb(52, 211, 153)" />
+                            <Text className="text-[10px] font-medium text-primary">Continue</Text>
+                          </Pressable>
+                          <Pressable
                             onPress={() => setConfirmDeleteSessionId(session.id)}
                             className="p-1"
                           >
@@ -248,6 +277,17 @@ export default function WorkoutsScreen() {
         destructive
         onConfirm={() => confirmDeleteSessionId && handleDeleteSession(confirmDeleteSessionId)}
         onCancel={() => setConfirmDeleteSessionId(null)}
+      />
+
+      {/* Confirm discard active workout to continue */}
+      <ConfirmDialog
+        visible={!!confirmContinueId}
+        title="Active Workout in Progress"
+        message="You have an active workout. Discard it and continue this one?"
+        confirmLabel="Discard & Continue"
+        destructive
+        onConfirm={handleForceContinue}
+        onCancel={() => setConfirmContinueId(null)}
       />
     </View>
   );

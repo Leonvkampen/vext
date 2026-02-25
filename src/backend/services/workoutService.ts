@@ -41,6 +41,29 @@ export async function addExerciseToWorkout(
   return workoutExercise.addToWorkout(db, workoutId, exerciseId, resolvedRest, targetRepsMin, targetRepsMax);
 }
 
+export async function continueWorkout(
+  db: SQLite.SQLiteDatabase,
+  workoutId: string
+): Promise<{ success: true } | { success: false; activeWorkoutId: string }> {
+  const active = await workout.getActive(db);
+  if (active) {
+    return { success: false, activeWorkoutId: active.id };
+  }
+  await workout.reopen(db, workoutId);
+  return { success: true };
+}
+
+export async function forceContinueWorkout(
+  db: SQLite.SQLiteDatabase,
+  workoutId: string
+): Promise<void> {
+  const active = await workout.getActive(db);
+  if (active) {
+    await workout.discard(db, active.id);
+  }
+  await workout.reopen(db, workoutId);
+}
+
 export async function updateWorkoutExerciseRestSeconds(
   db: SQLite.SQLiteDatabase,
   workoutExerciseId: string,

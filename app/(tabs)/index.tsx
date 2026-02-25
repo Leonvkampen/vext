@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -7,6 +7,8 @@ import * as progressService from '@backend/services/progressService';
 import * as workoutService from '@backend/services/workoutService';
 import { useDatabase } from '@frontend/hooks/useDatabase';
 import { WorkoutCard } from '@frontend/components/workout/WorkoutCard';
+import { ConfirmDialog } from '@frontend/components/overlay/ConfirmDialog';
+import { useContinueWorkout, useForceContinueWorkout } from '@frontend/hooks/useWorkout';
 import { useSettingsStore } from '@backend/store/settingsStore';
 
 function getGreeting(): string {
@@ -20,6 +22,25 @@ export default function HomeScreen() {
   const db = useDatabase();
   const router = useRouter();
   const units = useSettingsStore((s) => s.units);
+  const continueWorkout = useContinueWorkout();
+  const forceContinueWorkout = useForceContinueWorkout();
+  const [confirmContinueId, setConfirmContinueId] = useState<string | null>(null);
+
+  const handleContinue = async (workoutId: string) => {
+    const result = await continueWorkout.mutateAsync(workoutId);
+    if (result.success) {
+      router.replace(`/workout/${workoutId}`);
+    } else {
+      setConfirmContinueId(workoutId);
+    }
+  };
+
+  const handleForceContinue = async () => {
+    if (!confirmContinueId) return;
+    await forceContinueWorkout.mutateAsync(confirmContinueId);
+    setConfirmContinueId(null);
+    router.replace(`/workout/${confirmContinueId}`);
+  };
 
   const { data: todayStats } = useQuery({
     queryKey: ['todayStats'],
@@ -113,7 +134,7 @@ export default function HomeScreen() {
 
           {recentWorkouts && recentWorkouts.length > 0 ? (
             recentWorkouts.map((w) => (
-              <WorkoutCard key={w.id} workout={w} onPress={() => router.push('/(tabs)/workouts')} />
+              <WorkoutCard key={w.id} workout={w} onPress={() => router.push('/(tabs)/workouts')} onContinue={() => handleContinue(w.id)} />
             ))
           ) : (
             <View className="rounded-xl bg-background-50 p-6 items-center">
@@ -132,6 +153,17 @@ export default function HomeScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Confirm discard active workout to continue */}
+      <ConfirmDialog
+        visible={!!confirmContinueId}
+        title="Active Workout in Progress"
+        message="You have an active workout. Discard it and continue this one?"
+        confirmLabel="Discard & Continue"
+        destructive
+        onConfirm={handleForceContinue}
+        onCancel={() => setConfirmContinueId(null)}
+      />
     </View>
   );
 }

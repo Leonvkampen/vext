@@ -77,6 +77,17 @@ export async function complete(
   );
 }
 
+export async function reopen(
+  db: SQLite.SQLiteDatabase,
+  id: string
+): Promise<void> {
+  await db.runAsync(
+    `UPDATE workouts SET status = ?, completed_at = NULL WHERE id = ?`,
+    WorkoutStatus.InProgress,
+    id
+  );
+}
+
 export async function discard(
   db: SQLite.SQLiteDatabase,
   id: string

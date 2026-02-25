@@ -186,6 +186,40 @@ export function useDeleteWorkouts() {
   });
 }
 
+export function useContinueWorkout() {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (workoutId: string) => workoutService.continueWorkout(db, workoutId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activeWorkout'] });
+      queryClient.invalidateQueries({ queryKey: ['workoutHistory'] });
+      queryClient.invalidateQueries({ queryKey: ['workoutHistoryCount'] });
+      queryClient.invalidateQueries({ queryKey: ['recentWorkouts'] });
+      queryClient.invalidateQueries({ queryKey: ['todayStats'] });
+      queryClient.invalidateQueries({ queryKey: ['weeklyStats'] });
+      queryClient.invalidateQueries({ queryKey: ['currentStreak'] });
+    },
+  });
+}
+
+export function useForceContinueWorkout() {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (workoutId: string) => workoutService.forceContinueWorkout(db, workoutId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['activeWorkout'] });
+      queryClient.invalidateQueries({ queryKey: ['workoutHistory'] });
+      queryClient.invalidateQueries({ queryKey: ['workoutHistoryCount'] });
+      queryClient.invalidateQueries({ queryKey: ['recentWorkouts'] });
+      queryClient.invalidateQueries({ queryKey: ['todayStats'] });
+      queryClient.invalidateQueries({ queryKey: ['weeklyStats'] });
+      queryClient.invalidateQueries({ queryKey: ['currentStreak'] });
+    },
+  });
+}
+
 export function useUpdateWorkoutExerciseRestSeconds(workoutId: string) {
   const db = useDatabase();
   const queryClient = useQueryClient();
