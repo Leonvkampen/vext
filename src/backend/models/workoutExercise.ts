@@ -144,14 +144,14 @@ export async function reorder(
   workoutId: string,
   orderedIds: string[]
 ): Promise<void> {
-  await db.withTransactionAsync(async () => {
-    for (let i = 0; i < orderedIds.length; i++) {
-      await db.runAsync(
-        `UPDATE workout_exercises SET sort_order = ? WHERE id = ? AND workout_id = ?`,
-        i,
-        orderedIds[i],
-        workoutId
-      );
-    }
-  });
+  if (orderedIds.length === 0) return;
+  const whenClauses = orderedIds.map(() => `WHEN ? THEN ?`).join(' ');
+  const inPlaceholders = orderedIds.map(() => '?').join(', ');
+  const whenParams = orderedIds.flatMap((id, i) => [id, i]);
+  await db.runAsync(
+    `UPDATE workout_exercises SET sort_order = CASE id ${whenClauses} END WHERE workout_id = ? AND id IN (${inPlaceholders})`,
+    ...whenParams,
+    workoutId,
+    ...orderedIds
+  );
 }

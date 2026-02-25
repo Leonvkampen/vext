@@ -4,6 +4,7 @@ import * as workoutService from '@backend/services/workoutService';
 import { useDatabase } from '@frontend/hooks/useDatabase';
 import type { WorkoutSetInput } from '@backend/models/workoutSet';
 import Toast from 'react-native-toast-message';
+import { useExerciseOrderStore } from '@frontend/hooks/useExerciseOrderStore';
 
 export function useActiveWorkout() {
   const db = useDatabase();
@@ -85,6 +86,19 @@ export function useRemoveSet(workoutId: string) {
     mutationFn: (setId: string) => workoutService.removeSet(db, setId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workout', workoutId] });
+    },
+  });
+}
+
+export function useReorderExercises(workoutId: string) {
+  const db = useDatabase();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (orderedIds: string[]) =>
+      workoutService.reorderExercises(db, workoutId, orderedIds),
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['workout', workoutId] });
+      useExerciseOrderStore.getState().clearOrder(workoutId);
     },
   });
 }

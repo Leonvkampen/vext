@@ -48,7 +48,9 @@
     "typescript": "~5.9.2"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["@shopify/react-native-skia"]
+    "onlyBuiltDependencies": [
+      "@shopify/react-native-skia"
+    ]
   },
   "private": true
 }

@@ -1,6 +1,6 @@
 /** Active workout screen - log sets, manage exercises, and complete/discard a workout. */
 import React, { useState } from 'react';
-import { View, Text, FlatList, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ActiveWorkoutHeader } from '@frontend/components/workout/ActiveWorkoutHeader';
 import { ExerciseCard } from '@frontend/components/workout/ExerciseCard';
@@ -16,6 +16,7 @@ import {
   useUpdateSet,
   useRemoveSet,
   useRemoveExercise,
+  useReorderExercises,
   useCompleteWorkout,
   useDiscardWorkout,
   useUpdateWorkoutExerciseRestSeconds,
@@ -24,6 +25,7 @@ import {
 import { usePreviousSetsForExercises } from '@frontend/hooks/useHistory';
 import type { Exercise } from '@shared/types/exercise';
 import { cn } from '@frontend/lib/utils';
+import { useExerciseOrderStore } from '@frontend/hooks/useExerciseOrderStore';
 
 export default function ActiveWorkoutScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -44,13 +46,36 @@ export default function ActiveWorkoutScreen() {
   const updateSet = useUpdateSet(id!);
   const removeSet = useRemoveSet(id!);
   const removeExercise = useRemoveExercise(id!);
+  const reorderExercises = useReorderExercises(id!);
   const completeWorkout = useCompleteWorkout();
   const discardWorkout = useDiscardWorkout();
   const updateRestSeconds = useUpdateWorkoutExerciseRestSeconds(id!);
   const updateTargetReps = useUpdateExerciseTargetReps(id!);
 
+  const optimisticOrder = useExerciseOrderStore((s) => s.orders[id!]);
+  const setOrder = useExerciseOrderStore((s) => s.setOrder);
+
+  const exercises = React.useMemo(() => {
+    if (!workout) return [];
+    if (!optimisticOrder) return workout.exercises;
+    return optimisticOrder
+      .map((eid) => workout.exercises.find((e) => e.id === eid))
+      .filter(Boolean) as typeof workout.exercises;
+  }, [workout, optimisticOrder]);
+
   const handleAddExercise = (exercise: Exercise) => {
     addExercise.mutate({ exerciseId: exercise.id });
+  };
+
+  const handleMoveExercise = (index: number, direction: 'up' | 'down') => {
+    if (!workout) return;
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= exercises.length) return;
+    const newOrder = [...exercises];
+    [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
+    const orderedIds = newOrder.map((e) => e.id);
+    setOrder(id!, orderedIds);
+    reorderExercises.mutate(orderedIds);
   };
 
   const handleComplete = async () => {
@@ -86,12 +111,11 @@ export default function ActiveWorkoutScreen() {
         startedAt={workout.startedAt}
       />
 
-      <FlatList
-        data={workout.exercises}
-        keyExtractor={(item) => item.id}
+      <ScrollView
         className="flex-1 px-4"
-        contentContainerClassName={cn(workout.exercises.length === 0 ? 'flex-1' : 'pb-[120px]')}
-        ListEmptyComponent={
+        contentContainerClassName={cn(exercises.length === 0 ? 'flex-1' : 'pb-[120px]')}
+      >
+        {exercises.length === 0 ? (
           <EmptyState
             icon="add-circle-outline"
             title="No exercises yet"
@@ -99,26 +123,30 @@ export default function ActiveWorkoutScreen() {
             actionLabel="Add Exercise"
             onAction={() => setShowExercisePicker(true)}
           />
-        }
-        renderItem={({ item }) => (
-          <ExerciseCard
-            exercise={item}
-            isStrength={isStrength}
-            previousSets={previousSetsMap?.get(item.exerciseId)}
-            onAddSet={() => {
-              logSet.mutate({ workoutExerciseId: item.id, data: {} });
-            }}
-            onSaveSet={(setId, data) => {
-              updateSet.mutate({ setId, data });
-              startTimer(item.restSeconds);
-            }}
-            onRemoveSet={(setId) => removeSet.mutate(setId)}
-            onRemoveExercise={() => removeExercise.mutate(item.id)}
-            onUpdateRestSeconds={(seconds) => updateRestSeconds.mutate({ workoutExerciseId: item.id, restSeconds: seconds })}
-            onUpdateTargetReps={(min, max) => updateTargetReps.mutate({ workoutExerciseId: item.id, targetRepsMin: min, targetRepsMax: max })}
-          />
+        ) : (
+          exercises.map((item, index) => (
+            <ExerciseCard
+              key={item.id}
+              exercise={item}
+              isStrength={isStrength}
+              previousSets={previousSetsMap?.get(item.exerciseId)}
+              onMoveUp={index > 0 ? () => handleMoveExercise(index, 'up') : undefined}
+              onMoveDown={index < exercises.length - 1 ? () => handleMoveExercise(index, 'down') : undefined}
+              onAddSet={() => {
+                logSet.mutate({ workoutExerciseId: item.id, data: {} });
+              }}
+              onSaveSet={(setId, data) => {
+                updateSet.mutate({ setId, data });
+                startTimer(item.restSeconds);
+              }}
+              onRemoveSet={(setId) => removeSet.mutate(setId)}
+              onRemoveExercise={() => removeExercise.mutate(item.id)}
+              onUpdateRestSeconds={(seconds) => updateRestSeconds.mutate({ workoutExerciseId: item.id, restSeconds: seconds })}
+              onUpdateTargetReps={(min, max) => updateTargetReps.mutate({ workoutExerciseId: item.id, targetRepsMin: min, targetRepsMax: max })}
+            />
+          ))
         )}
-      />
+      </ScrollView>
 
       {/* Bottom action bar */}
       <View className="bg-background border-t border-background-100 px-4 pb-8 pt-3">

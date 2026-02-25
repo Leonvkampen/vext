@@ -31,6 +31,8 @@ type ExerciseCardProps = {
   exercise: WorkoutExerciseFull;
   isStrength: boolean;
   previousSets?: WorkoutSet[];
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
   onAddSet: () => void;
   onSaveSet: (setId: string, data: { weightKg?: number; reps?: number; durationSeconds?: number; distanceMeters?: number }) => void;
   onRemoveSet: (setId: string) => void;
@@ -39,10 +41,12 @@ type ExerciseCardProps = {
   onUpdateTargetReps: (min: number | null, max: number | null) => void;
 };
 
-export function ExerciseCard({
+export const ExerciseCard = React.memo(function ExerciseCard({
   exercise,
   isStrength,
   previousSets,
+  onMoveUp,
+  onMoveDown,
   onAddSet,
   onSaveSet,
   onRemoveSet,
@@ -78,7 +82,19 @@ export function ExerciseCard({
   return (
     <View className="mb-4 rounded-xl bg-background-50 p-4">
       <View className="flex-row items-center justify-between mb-2">
-        <Text className="text-base font-bold text-foreground">{exercise.exerciseName}</Text>
+        <View className="flex-row items-center flex-1 gap-2">
+          {(onMoveUp || onMoveDown) && (
+            <View className="flex-row items-center gap-2">
+              <Pressable onPressIn={onMoveUp} disabled={!onMoveUp} className="p-1.5">
+                <Ionicons name="chevron-up" size={18} color={onMoveUp ? 'rgb(163, 163, 163)' : 'rgb(64, 64, 64)'} />
+              </Pressable>
+              <Pressable onPressIn={onMoveDown} disabled={!onMoveDown} className="p-1.5">
+                <Ionicons name="chevron-down" size={18} color={onMoveDown ? 'rgb(163, 163, 163)' : 'rgb(64, 64, 64)'} />
+              </Pressable>
+            </View>
+          )}
+          <Text className="text-base font-bold text-foreground flex-1">{exercise.exerciseName}</Text>
+        </View>
         <Pressable onPress={() => setShowRemoveConfirm(true)} className="p-1">
           <Ionicons name="close-circle-outline" size={20} color="rgb(163, 163, 163)" />
         </Pressable>
@@ -221,4 +237,4 @@ export function ExerciseCard({
       />
     </View>
   );
-}
+});

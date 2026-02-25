@@ -137,6 +137,14 @@ export async function removeSet(
   return workoutSet.remove(db, setId);
 }
 
+export async function reorderExercises(
+  db: SQLite.SQLiteDatabase,
+  workoutId: string,
+  orderedIds: string[]
+): Promise<void> {
+  return workoutExercise.reorder(db, workoutId, orderedIds);
+}
+
 export async function removeExerciseFromWorkout(
   db: SQLite.SQLiteDatabase,
   workoutExerciseId: string
