@@ -1,9 +1,9 @@
 name: Build Android APK
 
 # Triggers:
-#   - Push to master        → test build (debug APK)
-#   - Manual workflow_dispatch → staging build (release APK)
-#   - Push a tag like v1.0.0 → production build (release APK + GitHub Release)
+#   - Push to master        → test build (debug-signed release APK)
+#   - Manual workflow_dispatch → staging build (release-signed APK)
+#   - Push a tag like v1.0.0 → production build (release-signed APK + GitHub Release)
 on:
   push:
     branches: [master]
@@ -27,15 +27,12 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF#refs/tags/v}"
             echo "environment=production" >> "$GITHUB_OUTPUT"
-            echo "build_type=release" >> "$GITHUB_OUTPUT"
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
             echo "environment=staging" >> "$GITHUB_OUTPUT"
-            echo "build_type=release" >> "$GITHUB_OUTPUT"
             echo "version=" >> "$GITHUB_OUTPUT"
           else
             echo "environment=test" >> "$GITHUB_OUTPUT"
-            echo "build_type=debug" >> "$GITHUB_OUTPUT"
             echo "version=" >> "$GITHUB_OUTPUT"
           fi
 
@@ -99,24 +96,18 @@ jobs:
       - name: Expo prebuild
         run: npx expo prebuild --platform android --clean
 
-      # ── Signing (release builds only) ──
+      # ── Signing (staging/production only) ──
       - name: Decode release keystore
-        if: steps.env.outputs.build_type == 'release'
+        if: steps.env.outputs.environment != 'test'
         env:
           RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
         run: echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > android/app/vext-release.keystore
 
       # ── Build ──
-      - name: Build debug APK
-        if: steps.env.outputs.build_type == 'debug'
-        working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
-
       - name: Build release APK
-        if: steps.env.outputs.build_type == 'release'
         working-directory: android
         env:
-          RELEASE_KEYSTORE_FILE: vext-release.keystore
+          RELEASE_KEYSTORE_FILE: ${{ steps.env.outputs.environment != 'test' && 'vext-release.keystore' || '' }}
           RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
@@ -125,21 +116,15 @@ jobs:
       # ── Rename APK for clarity ──
       - name: Rename APK
         run: |
-          ENV="${{ steps.env.outputs.environment }}"
-          if [[ "${{ steps.env.outputs.build_type }}" == "debug" ]]; then
-            mv android/app/build/outputs/apk/debug/app-debug.apk \
-               android/app/build/outputs/apk/debug/vext-${ENV}.apk
-          else
-            mv android/app/build/outputs/apk/release/app-release.apk \
-               android/app/build/outputs/apk/release/vext-${ENV}.apk
-          fi
+          mv android/app/build/outputs/apk/release/app-release.apk \
+             android/app/build/outputs/apk/release/vext-${{ steps.env.outputs.environment }}.apk
 
       # ── Upload artifact (always) ──
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: vext-${{ steps.env.outputs.environment }}-apk
-          path: android/app/build/outputs/apk/**/vext-*.apk
+          path: android/app/build/outputs/apk/release/vext-${{ steps.env.outputs.environment }}.apk
           retention-days: 30
 
       # ── GitHub Release (production only) ──
