@@ -14,7 +14,7 @@ function withReleaseSigning(config) {
     const releaseSigningConfig = [
       '        release {',
       '            def ksFile = System.getenv("RELEASE_KEYSTORE_FILE")',
-      '            if (ksFile != null && file(ksFile).exists()) {',
+      '            if (ksFile != null && !ksFile.isEmpty() && file(ksFile).exists()) {',
       '                storeFile file(ksFile)',
       '                storePassword System.getenv("RELEASE_KEYSTORE_PASSWORD")',
       '                keyAlias System.getenv("RELEASE_KEY_ALIAS")',
