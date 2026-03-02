@@ -26,6 +26,7 @@ import { usePreviousSetsForExercises } from '@frontend/hooks/useHistory';
 import type { Exercise } from '@shared/types/exercise';
 import { cn } from '@frontend/lib/utils';
 import { useExerciseOrderStore } from '@frontend/hooks/useExerciseOrderStore';
+import { useWorkoutTimer } from '@frontend/hooks/useWorkoutTimer';
 
 export default function ActiveWorkoutScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -51,6 +52,8 @@ export default function ActiveWorkoutScreen() {
   const discardWorkout = useDiscardWorkout();
   const updateRestSeconds = useUpdateWorkoutExerciseRestSeconds(id!);
   const updateTargetReps = useUpdateExerciseTargetReps(id!);
+
+  const { elapsed, clear: clearTimer } = useWorkoutTimer(id!);
 
   const optimisticOrder = useExerciseOrderStore((s) => s.orders[id!]);
   const setOrder = useExerciseOrderStore((s) => s.setOrder);
@@ -81,6 +84,7 @@ export default function ActiveWorkoutScreen() {
   const handleComplete = async () => {
     try {
       await completeWorkout.mutateAsync(id!);
+      clearTimer(id!);
       router.replace('/(tabs)/workouts');
     } catch (e) {
       // mutation errors shown inline via completeWorkout.error
@@ -90,6 +94,7 @@ export default function ActiveWorkoutScreen() {
 
   const handleDiscard = async () => {
     await discardWorkout.mutateAsync(id!);
+    clearTimer(id!);
     setShowDiscardConfirm(false);
     router.replace('/(tabs)');
   };
@@ -109,7 +114,7 @@ export default function ActiveWorkoutScreen() {
       <ActiveWorkoutHeader
         workoutName={workout.name}
         workoutTypeName={workout.workoutType.name}
-        startedAt={workout.startedAt}
+        elapsed={elapsed}
       />
 
       <ScrollView
