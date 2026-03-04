@@ -78,24 +78,24 @@ export default function HomeScreen() {
           <Text className="mt-1 text-sm text-foreground-muted">Let's crush it today</Text>
         </View>
 
-        {/* Streak + Today Stats row */}
-        <View className="flex-row px-4 mt-2 gap-3">
+        {/* Streak + Today Stats */}
+        <View className="px-4 mt-2 gap-3">
           {/* Streak */}
-          <View className="flex-1 rounded-xl bg-background-50 p-4 items-center">
+          <View className="rounded-xl bg-background-50 p-4 items-center">
             <Ionicons name="flame" size={24} color="rgb(251, 146, 60)" />
             <Text className="mt-1 text-2xl font-bold text-foreground">{streak ?? 0}</Text>
             <Text className="text-xs text-foreground-muted">Day streak</Text>
           </View>
 
           {/* Today */}
-          <View className="flex-1 rounded-xl bg-background-50 p-4 items-center">
+          <View className="rounded-xl bg-background-50 p-4 items-center">
             <Ionicons name="today-outline" size={24} color="rgb(52, 211, 153)" />
             <Text className="mt-1 text-2xl font-bold text-foreground">{todayStats?.workoutsToday ?? 0}</Text>
             <Text className="text-xs text-foreground-muted">Workouts today</Text>
           </View>
 
           {/* Volume today */}
-          <View className="flex-1 rounded-xl bg-background-50 p-4 items-center">
+          <View className="rounded-xl bg-background-50 p-4 items-center">
             <Ionicons name="trending-up" size={24} color="rgb(52, 211, 153)" />
             <Text className="mt-1 text-lg font-bold text-foreground">
               {todayStats?.volumeToday ? Math.round(todayStats.volumeToday) : 0}
