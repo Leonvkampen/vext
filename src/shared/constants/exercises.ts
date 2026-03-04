@@ -3,27 +3,27 @@ import { ExerciseCategory, MuscleGroup, Equipment, type ExerciseSeed } from '@sh
 
 export const SEED_EXERCISES: ExerciseSeed[] = [
   // === CHEST (Strength) ===
-  { name: 'Barbell Bench Press', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Chest, MuscleGroup.Triceps], equipment: Equipment.Barbell, instructions: 'Lie on a flat bench, grip the bar slightly wider than shoulder-width, lower to chest, press up.' },
-  { name: 'Incline Barbell Bench Press', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Chest, MuscleGroup.Shoulders], equipment: Equipment.Barbell, instructions: 'Set bench to 30-45 degrees. Lower bar to upper chest, press up.' },
-  { name: 'Dumbbell Bench Press', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Chest, MuscleGroup.Triceps], equipment: Equipment.Dumbbell, instructions: 'Lie on a flat bench with dumbbells, press up from chest level.' },
+  { name: 'Barbell Bench Press', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Chest], equipment: Equipment.Barbell, instructions: 'Lie on a flat bench, grip the bar slightly wider than shoulder-width, lower to chest, press up.' },
+  { name: 'Incline Barbell Bench Press', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Chest], equipment: Equipment.Barbell, instructions: 'Set bench to 30-45 degrees. Lower bar to upper chest, press up.' },
+  { name: 'Dumbbell Bench Press', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Chest], equipment: Equipment.Dumbbell, instructions: 'Lie on a flat bench with dumbbells, press up from chest level.' },
   { name: 'Dumbbell Fly', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Chest], equipment: Equipment.Dumbbell, instructions: 'Lie on a flat bench, arms extended, lower dumbbells in a wide arc, squeeze back up.' },
   { name: 'Cable Crossover', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Chest], equipment: Equipment.Cable, instructions: 'Set cables high, step forward, bring handles together in front of chest.' },
-  { name: 'Push-Up', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Chest, MuscleGroup.Triceps], equipment: Equipment.Bodyweight, instructions: 'Hands shoulder-width apart, lower chest to ground, push up.' },
-  { name: 'Chest Press Machine', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Chest, MuscleGroup.Triceps], equipment: Equipment.Machine, instructions: 'Sit upright, grip handles at chest height, press forward, return slowly.' },
+  { name: 'Push-Up', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Chest], equipment: Equipment.Bodyweight, instructions: 'Hands shoulder-width apart, lower chest to ground, push up.' },
+  { name: 'Chest Press Machine', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Chest], equipment: Equipment.Machine, instructions: 'Sit upright, grip handles at chest height, press forward, return slowly.' },
 
   // === BACK (Strength) ===
   { name: 'Barbell Deadlift', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Back, MuscleGroup.Hamstrings, MuscleGroup.Glutes], equipment: Equipment.Barbell, instructions: 'Stand with feet hip-width, grip bar, drive through heels, extend hips and knees.' },
-  { name: 'Barbell Bent-Over Row', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Back, MuscleGroup.Biceps], equipment: Equipment.Barbell, instructions: 'Hinge at hips, grip bar, pull to lower chest, lower with control.' },
-  { name: 'Pull-Up', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Back, MuscleGroup.Biceps], equipment: Equipment.Bodyweight, instructions: 'Hang from bar, pull chin above bar, lower with control.' },
-  { name: 'Lat Pulldown', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Back, MuscleGroup.Biceps], equipment: Equipment.Cable, instructions: 'Grip wide bar, pull down to upper chest, squeeze shoulder blades together.' },
+  { name: 'Barbell Bent-Over Row', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Back], equipment: Equipment.Barbell, instructions: 'Hinge at hips, grip bar, pull to lower chest, lower with control.' },
+  { name: 'Pull-Up', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Back], equipment: Equipment.Bodyweight, instructions: 'Hang from bar, pull chin above bar, lower with control.' },
+  { name: 'Lat Pulldown', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Back], equipment: Equipment.Cable, instructions: 'Grip wide bar, pull down to upper chest, squeeze shoulder blades together.' },
   { name: 'Seated Cable Row', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Back], equipment: Equipment.Cable, instructions: 'Sit upright, pull handle to torso, squeeze shoulder blades, return slowly.' },
-  { name: 'Dumbbell Single-Arm Row', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Back, MuscleGroup.Biceps], equipment: Equipment.Dumbbell, instructions: 'One knee on bench, pull dumbbell to hip, lower with control.' },
+  { name: 'Dumbbell Single-Arm Row', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Back], equipment: Equipment.Dumbbell, instructions: 'One knee on bench, pull dumbbell to hip, lower with control.' },
 
   // === SHOULDERS (Strength) ===
-  { name: 'Overhead Press', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Shoulders, MuscleGroup.Triceps], equipment: Equipment.Barbell, instructions: 'Stand with bar at shoulder height, press overhead, lower with control.' },
+  { name: 'Overhead Press', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Shoulders], equipment: Equipment.Barbell, instructions: 'Stand with bar at shoulder height, press overhead, lower with control.' },
   { name: 'Dumbbell Lateral Raise', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Shoulders], equipment: Equipment.Dumbbell, instructions: 'Stand with dumbbells at sides, raise arms to shoulder height, lower slowly.' },
-  { name: 'Dumbbell Shoulder Press', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Shoulders, MuscleGroup.Triceps], equipment: Equipment.Dumbbell, instructions: 'Sit or stand, press dumbbells from shoulder height overhead.' },
-  { name: 'Face Pull', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Shoulders, MuscleGroup.Back], equipment: Equipment.Cable, instructions: 'Set cable at face height, pull rope to face with elbows high, squeeze rear delts.' },
+  { name: 'Dumbbell Shoulder Press', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Shoulders], equipment: Equipment.Dumbbell, instructions: 'Sit or stand, press dumbbells from shoulder height overhead.' },
+  { name: 'Face Pull', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Shoulders], equipment: Equipment.Cable, instructions: 'Set cable at face height, pull rope to face with elbows high, squeeze rear delts.' },
   { name: 'Dumbbell Front Raise', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Shoulders], equipment: Equipment.Dumbbell, instructions: 'Stand with dumbbells in front of thighs, raise one or both arms to shoulder height.' },
 
   // === BICEPS (Strength) ===
@@ -35,8 +35,8 @@ export const SEED_EXERCISES: ExerciseSeed[] = [
   // === TRICEPS (Strength) ===
   { name: 'Tricep Pushdown', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Triceps], equipment: Equipment.Cable, instructions: 'Stand facing cable, grip bar or rope, push down extending elbows fully.' },
   { name: 'Overhead Tricep Extension', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Triceps], equipment: Equipment.Dumbbell, instructions: 'Hold dumbbell overhead with both hands, lower behind head, extend back up.' },
-  { name: 'Dip', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Triceps, MuscleGroup.Chest], equipment: Equipment.Bodyweight, instructions: 'Grip parallel bars, lower body by bending elbows, push back up.' },
-  { name: 'Close-Grip Bench Press', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Triceps, MuscleGroup.Chest], equipment: Equipment.Barbell, instructions: 'Lie on bench, grip bar with hands close together, lower to chest, press up.' },
+  { name: 'Dip', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Triceps], equipment: Equipment.Bodyweight, instructions: 'Grip parallel bars, lower body by bending elbows, push back up.' },
+  { name: 'Close-Grip Bench Press', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Triceps], equipment: Equipment.Barbell, instructions: 'Lie on bench, grip bar with hands close together, lower to chest, press up.' },
 
   // === QUADS (Strength) ===
   { name: 'Barbell Squat', category: ExerciseCategory.Strength, primaryMuscles: [MuscleGroup.Quads, MuscleGroup.Glutes], equipment: Equipment.Barbell, instructions: 'Bar on upper back, feet shoulder-width, squat until thighs are parallel, stand up.' },
