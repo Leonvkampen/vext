@@ -3,8 +3,9 @@ import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { WorkoutSummary } from '@shared/types/workout';
-import { formatDate, formatDuration, formatVolume, parseUTCTimestamp } from '@shared/utils/formatting';
-import { useSettingsStore } from '@backend/store/settingsStore';
+import { formatDate, formatDuration, parseUTCTimestamp } from '@shared/utils/formatting';
+import { MUSCLE_GROUP_LABELS } from '@shared/constants/muscleGroups';
+import type { MuscleGroup } from '@shared/types/exercise';
 
 type WorkoutCardProps = {
   workout: WorkoutSummary;
@@ -16,7 +17,6 @@ type WorkoutCardProps = {
 };
 
 export function WorkoutCard({ workout, onPress, onRepeat, onContinue, onDelete, sessionCount }: WorkoutCardProps) {
-  const units = useSettingsStore((s) => s.units);
   const duration = workout.elapsedSeconds > 0
     ? workout.elapsedSeconds
     : workout.completedAt
@@ -41,6 +41,24 @@ export function WorkoutCard({ workout, onPress, onRepeat, onContinue, onDelete, 
         </View>
       </View>
 
+      {Object.keys(workout.muscleGroupSets).length > 0 && (
+        <View className="mt-3">
+          <Text className="mb-1.5 text-xs text-foreground-subtle">Sets per muscle group</Text>
+          <View className="flex-row flex-wrap gap-1.5">
+            {Object.entries(workout.muscleGroupSets)
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 4)
+              .map(([muscle, count]) => (
+                <View key={muscle} className="flex-row items-center rounded-full bg-background-100 px-2 py-0.5">
+                  <Text className="text-xs text-foreground-muted">
+                    {MUSCLE_GROUP_LABELS[muscle as MuscleGroup] ?? muscle} x{count}
+                  </Text>
+                </View>
+              ))}
+          </View>
+        </View>
+      )}
+
       <View className="mt-3 flex-row items-start">
         <View className="flex-1 gap-1.5">
           <View className="flex-row items-center gap-1">
@@ -55,12 +73,6 @@ export function WorkoutCard({ workout, onPress, onRepeat, onContinue, onDelete, 
             <Ionicons name="layers-outline" size={14} color="rgb(163, 163, 163)" />
             <Text className="text-xs text-foreground-muted">{workout.setCount} sets</Text>
           </View>
-          {workout.totalVolume > 0 && (
-            <View className="flex-row items-center gap-1">
-              <Ionicons name="trending-up-outline" size={14} color="rgb(163, 163, 163)" />
-              <Text className="text-xs text-foreground-muted">{formatVolume(workout.totalVolume, units)}</Text>
-            </View>
-          )}
         </View>
         {onContinue && (
           <Pressable

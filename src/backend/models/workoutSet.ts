@@ -157,13 +157,18 @@ export async function getByWorkout(
 }
 
 /**
- * Returns all sets from the most recent completed workout containing the given exercise.
+ * Returns all sets from the most recent completed workout containing the given exercise
+ * within the same series. If seriesId is null/undefined (standalone workout), returns empty.
  * Used to show "Last time" reference data on ExerciseCard.
  */
 export async function getLatestSetsForExercise(
   db: SQLite.SQLiteDatabase,
-  exerciseId: string
+  exerciseId: string,
+  seriesId?: string | null
 ): Promise<WorkoutSet[]> {
+  // New standalone workouts (no series) should show no reference weights
+  if (!seriesId) return [];
+
   const rows = await db.getAllAsync<WorkoutSetRow>(
     `SELECT ws.*
      FROM workout_sets ws
@@ -171,8 +176,10 @@ export async function getLatestSetsForExercise(
      JOIN workouts w ON w.id = we.workout_id
      WHERE we.exercise_id = ?
        AND w.status = 'completed'
+       AND w.series_id = ?
      ORDER BY w.completed_at DESC, ws.set_number ASC`,
-    exerciseId
+    exerciseId,
+    seriesId
   );
   if (rows.length === 0) return [];
   // All rows are ordered by completed_at DESC — take only sets from the most recent workout
@@ -184,11 +191,13 @@ export async function getLatestSetsForExercise(
 
 /**
  * Batch version: returns previous sets for multiple exercises at once.
+ * If seriesId is null/undefined, returns empty (standalone workout).
  * Returns a Map keyed by exerciseId.
  */
 export async function getLatestSetsForExercises(
   db: SQLite.SQLiteDatabase,
-  exerciseIds: string[]
+  exerciseIds: string[],
+  seriesId?: string | null
 ): Promise<Map<string, WorkoutSet[]>> {
   const result = new Map<string, WorkoutSet[]>();
   if (exerciseIds.length === 0) return result;
@@ -196,7 +205,7 @@ export async function getLatestSetsForExercises(
   // Fetch in parallel
   await Promise.all(
     exerciseIds.map(async (eid) => {
-      const sets = await getLatestSetsForExercise(db, eid);
+      const sets = await getLatestSetsForExercise(db, eid, seriesId);
       if (sets.length > 0) result.set(eid, sets);
     })
   );

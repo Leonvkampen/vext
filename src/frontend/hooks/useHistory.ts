@@ -53,12 +53,12 @@ export function useWorkoutGroupDetails(workoutIds: string[]) {
   });
 }
 
-export function usePreviousSetsForExercises(exerciseIds: string[]) {
+export function usePreviousSetsForExercises(exerciseIds: string[], seriesId?: string | null) {
   const db = useDatabase();
   return useQuery<Map<string, WorkoutSet[]>>({
-    queryKey: ['previousSets', ...exerciseIds],
-    queryFn: () => workoutService.getPreviousSetsForExercises(db, exerciseIds),
-    enabled: exerciseIds.length > 0,
+    queryKey: ['previousSets', seriesId ?? 'none', ...exerciseIds],
+    queryFn: () => workoutService.getPreviousSetsForExercises(db, exerciseIds, seriesId),
+    enabled: exerciseIds.length > 0 && !!seriesId,
     staleTime: 5 * 60 * 1000,
   });
 }

@@ -23,10 +23,17 @@ import {
   useUpdateExerciseTargetReps,
 } from '@frontend/hooks/useWorkout';
 import { usePreviousSetsForExercises } from '@frontend/hooks/useHistory';
+import { ExerciseCategory } from '@shared/types/exercise';
 import type { Exercise } from '@shared/types/exercise';
-import type { WorkoutFull } from '@shared/types/workout';
+import type { WorkoutFull, WorkoutFieldDefinition } from '@shared/types/workout';
 import { cn } from '@frontend/lib/utils';
-import { useExerciseOrderStore } from '@frontend/hooks/useExerciseOrderStore';
+
+function categoryFromFields(fields: WorkoutFieldDefinition[]): ExerciseCategory | undefined {
+  if (fields.some((f) => f.name === 'weight')) return ExerciseCategory.Strength;
+  if (fields.some((f) => f.type === 'distance')) return ExerciseCategory.Cardio;
+  if (fields.some((f) => f.type === 'duration')) return ExerciseCategory.Flexibility;
+  return undefined;
+}
 /** Inner component — only mounts once workout data is available. */
 function ActiveWorkoutContent({ workout, id }: { workout: WorkoutFull; id: string }) {
   const router = useRouter();
@@ -38,7 +45,7 @@ function ActiveWorkoutContent({ workout, id }: { workout: WorkoutFull; id: strin
     () => workout.exercises.map((ex) => ex.exerciseId),
     [workout.exercises]
   );
-  const { data: previousSetsMap } = usePreviousSetsForExercises(exerciseIds);
+  const { data: previousSetsMap } = usePreviousSetsForExercises(exerciseIds, workout.seriesId);
   const addExercise = useAddExercise(id);
   const logSet = useLogSet(id);
   const updateSet = useUpdateSet(id);
@@ -49,15 +56,8 @@ function ActiveWorkoutContent({ workout, id }: { workout: WorkoutFull; id: strin
   const discardWorkout = useDiscardWorkout();
   const updateRestSeconds = useUpdateWorkoutExerciseRestSeconds(id);
   const updateTargetReps = useUpdateExerciseTargetReps(id);
-  const optimisticOrder = useExerciseOrderStore((s) => s.orders[id]);
-  const setOrder = useExerciseOrderStore((s) => s.setOrder);
 
-  const exercises = React.useMemo(() => {
-    if (!optimisticOrder) return workout.exercises;
-    return optimisticOrder
-      .map((eid) => workout.exercises.find((e) => e.id === eid))
-      .filter(Boolean) as typeof workout.exercises;
-  }, [workout, optimisticOrder]);
+  const exercises = workout.exercises;
 
   const handleAddExercise = (exercise: Exercise) => {
     addExercise.mutate({ exerciseId: exercise.id });
@@ -69,7 +69,6 @@ function ActiveWorkoutContent({ workout, id }: { workout: WorkoutFull; id: strin
     const newOrder = [...exercises];
     [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
     const orderedIds = newOrder.map((e) => e.id);
-    setOrder(id, orderedIds);
     reorderExercises.mutate(orderedIds);
   };
 
@@ -116,15 +115,13 @@ function ActiveWorkoutContent({ workout, id }: { workout: WorkoutFull; id: strin
               exercise={item}
               isStrength={isStrength}
               previousSets={previousSetsMap?.get(item.exerciseId)}
-              onMoveUp={index > 0 && !reorderExercises.isPending ? () => handleMoveExercise(index, 'up') : undefined}
-              onMoveDown={index < exercises.length - 1 && !reorderExercises.isPending ? () => handleMoveExercise(index, 'down') : undefined}
+              onMoveUp={index > 0 ? () => handleMoveExercise(index, 'up') : undefined}
+              onMoveDown={index < exercises.length - 1 ? () => handleMoveExercise(index, 'down') : undefined}
               onAddSet={() => {
                 logSet.mutate({ workoutExerciseId: item.id, data: {} });
               }}
-              onSaveSet={(setId, data) => {
-                updateSet.mutate({ setId, data });
-                startTimer(item.restSeconds);
-              }}
+              onSaveSet={(setId, data) => updateSet.mutate({ setId, data })}
+              onStartRest={item.restSeconds > 0 ? () => startTimer(item.restSeconds) : undefined}
               onRemoveSet={(setId) => removeSet.mutate(setId)}
               onRemoveExercise={() => removeExercise.mutate(item.id)}
               onUpdateRestSeconds={(seconds) => updateRestSeconds.mutate({ workoutExerciseId: item.id, restSeconds: seconds })}
@@ -172,6 +169,7 @@ function ActiveWorkoutContent({ workout, id }: { workout: WorkoutFull; id: strin
         visible={showExercisePicker}
         onSelect={handleAddExercise}
         onClose={() => setShowExercisePicker(false)}
+        defaultCategory={categoryFromFields(workout.workoutType.fields)}
       />
 
       <ConfirmDialog

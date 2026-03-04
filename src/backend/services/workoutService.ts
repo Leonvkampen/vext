@@ -1,4 +1,5 @@
 /** Workout service - orchestrates workout lifecycle, set logging, and exercise management. */
+import * as Crypto from 'expo-crypto';
 import type * as SQLite from 'expo-sqlite';
 import * as workout from '@backend/models/workout';
 import * as workoutExercise from '@backend/models/workoutExercise';
@@ -16,13 +17,14 @@ import { WorkoutStatus } from '@shared/types/workout';
 export async function startWorkout(
   db: SQLite.SQLiteDatabase,
   typeId: string,
-  name?: string | null
+  name?: string | null,
+  seriesId?: string | null
 ): Promise<Workout> {
   const active = await workout.getActive(db);
   if (active) {
     throw new Error('A workout is already in progress. Complete or discard it before starting a new one.');
   }
-  return workout.create(db, typeId, name);
+  return workout.create(db, typeId, name, seriesId);
 }
 
 export async function addExerciseToWorkout(
@@ -182,9 +184,11 @@ export async function deleteWorkouts(
   db: SQLite.SQLiteDatabase,
   workoutIds: string[]
 ): Promise<void> {
-  for (const id of workoutIds) {
-    await workout.remove(db, id);
-  }
+  await db.withTransactionAsync(async () => {
+    for (const id of workoutIds) {
+      await workout.remove(db, id);
+    }
+  });
 }
 
 export async function getActiveWorkout(
@@ -262,6 +266,28 @@ export async function getWorkoutSummaries(
     offset
   );
 
+  if (rows.length === 0) return [];
+
+  // Batch-fetch muscle group set counts for all returned workouts
+  const workoutIds = rows.map((r) => r.id);
+  const placeholders = workoutIds.map(() => '?').join(', ');
+  const muscleRows = await db.getAllAsync<{ workout_id: string; muscle_group: string; set_count: number }>(
+    `SELECT we.workout_id, jm.value AS muscle_group, COUNT(ws.id) AS set_count
+     FROM workout_exercises we
+     JOIN exercises e ON e.id = we.exercise_id
+     JOIN json_each(e.primary_muscles) jm
+     JOIN workout_sets ws ON ws.workout_exercise_id = we.id
+     WHERE we.workout_id IN (${placeholders})
+     GROUP BY we.workout_id, jm.value`,
+    ...workoutIds
+  );
+
+  const muscleMap = new Map<string, Record<string, number>>();
+  for (const mr of muscleRows) {
+    if (!muscleMap.has(mr.workout_id)) muscleMap.set(mr.workout_id, {});
+    muscleMap.get(mr.workout_id)![mr.muscle_group] = mr.set_count;
+  }
+
   return rows.map((row) => ({
     id: row.id,
     name: row.name,
@@ -273,6 +299,7 @@ export async function getWorkoutSummaries(
     setCount: row.set_count,
     totalVolume: row.total_volume ?? 0,
     elapsedSeconds: row.elapsed_seconds,
+    muscleGroupSets: muscleMap.get(row.id) ?? {},
   }));
 }
 
@@ -283,17 +310,16 @@ export async function repeatWorkout(
   const source = await getFullWorkout(db, sourceWorkoutId);
   if (!source) throw new Error('Source workout not found');
 
-  // Generate name: "Push Day (#3)" based on how many completed workouts share the same type
-  const countRow = await db.getFirstAsync<{ count: number }>(
-    `SELECT COUNT(*) AS count FROM workouts WHERE workout_type_id = ? AND status = ?`,
-    source.workoutTypeId,
-    WorkoutStatus.Completed
-  );
-  const count = (countRow?.count ?? 0) + 1;
-  const baseName = source.name || source.workoutType.name;
-  const generatedName = `${baseName} (#${count})`;
+  const name = source.name || source.workoutType.name;
 
-  const newWorkout = await startWorkout(db, source.workoutTypeId, generatedName);
+  // Inherit the source's series_id, or create a new series and tag the source too
+  let seriesId = source.seriesId;
+  if (!seriesId) {
+    seriesId = Crypto.randomUUID();
+    await db.runAsync(`UPDATE workouts SET series_id = ? WHERE id = ?`, seriesId, source.id);
+  }
+
+  const newWorkout = await startWorkout(db, source.workoutTypeId, name, seriesId);
 
   for (const ex of source.exercises) {
     const newExercise = await addExerciseToWorkout(db, newWorkout.id, ex.exerciseId, ex.restSeconds, ex.targetRepsMin, ex.targetRepsMax);
@@ -308,9 +334,10 @@ export async function repeatWorkout(
 
 export async function getPreviousSetsForExercises(
   db: SQLite.SQLiteDatabase,
-  exerciseIds: string[]
+  exerciseIds: string[],
+  seriesId?: string | null
 ): Promise<Map<string, WorkoutSet[]>> {
-  return workoutSet.getLatestSetsForExercises(db, exerciseIds);
+  return workoutSet.getLatestSetsForExercises(db, exerciseIds, seriesId);
 }
 
 export async function getFullWorkoutsByIds(

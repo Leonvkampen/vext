@@ -23,6 +23,7 @@ export interface WorkoutType {
 export interface Workout {
   id: string;
   workoutTypeId: string;
+  seriesId: string | null;
   name: string | null;
   status: WorkoutStatus;
   startedAt: string;
@@ -82,6 +83,7 @@ export interface WorkoutSummary {
   setCount: number;
   totalVolume: number;
   elapsedSeconds: number;
+  muscleGroupSets: Record<string, number>;
 }
 
 /** Grouped repeated workouts for history list */

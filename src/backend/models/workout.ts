@@ -6,6 +6,7 @@ import { Workout, WorkoutStatus } from '@shared/types/workout';
 interface WorkoutRow {
   id: string;
   workout_type_id: string;
+  series_id: string | null;
   name: string | null;
   status: string;
   started_at: string;
@@ -20,6 +21,7 @@ function mapRow(row: WorkoutRow): Workout {
   return {
     id: row.id,
     workoutTypeId: row.workout_type_id,
+    seriesId: row.series_id,
     name: row.name,
     status: row.status as WorkoutStatus,
     startedAt: row.started_at,
@@ -35,16 +37,18 @@ function mapRow(row: WorkoutRow): Workout {
 export async function create(
   db: SQLite.SQLiteDatabase,
   workoutTypeId: string,
-  name?: string | null
+  name?: string | null,
+  seriesId?: string | null
 ): Promise<Workout> {
   const id = Crypto.randomUUID();
   await db.runAsync(
-    `INSERT INTO workouts (id, workout_type_id, name, status, started_at, last_started_at, created_at)
-     VALUES (?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'))`,
+    `INSERT INTO workouts (id, workout_type_id, name, status, started_at, last_started_at, created_at, series_id)
+     VALUES (?, ?, ?, ?, datetime('now'), datetime('now'), datetime('now'), ?)`,
     id,
     workoutTypeId,
     name ?? null,
-    WorkoutStatus.InProgress
+    WorkoutStatus.InProgress,
+    seriesId ?? null
   );
   const workout = await getById(db, id);
   if (!workout) throw new Error(`Failed to create workout with id ${id}`);

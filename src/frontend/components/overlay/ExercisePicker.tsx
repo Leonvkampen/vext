@@ -5,49 +5,62 @@ import { Ionicons } from '@expo/vector-icons';
 import { useExercises, useExerciseSearch, useCreateExercise } from '@frontend/hooks/useExercises';
 import { ExerciseForm } from '@frontend/components/overlay/ExerciseForm';
 import { EQUIPMENT_LABELS } from '@shared/constants/equipment';
-import type { Exercise, ExerciseCategory } from '@shared/types/exercise';
-
-const CATEGORIES: { label: string; value: ExerciseCategory | null }[] = [
-  { label: 'All', value: null },
-  { label: 'Strength', value: 'strength' as ExerciseCategory },
-  { label: 'Cardio', value: 'cardio' as ExerciseCategory },
-  { label: 'Flexibility', value: 'flexibility' as ExerciseCategory },
-];
+import { MUSCLE_GROUP_LABELS, MUSCLE_GROUP_ORDER } from '@shared/constants/muscleGroups';
+import type { Exercise, ExerciseCategory, MuscleGroup } from '@shared/types/exercise';
 
 type ExercisePickerProps = {
   visible: boolean;
   onSelect: (exercise: Exercise) => void;
   onClose: () => void;
+  /** If provided, only exercises of this category are shown. */
+  defaultCategory?: ExerciseCategory;
 };
 
-export function ExercisePicker({ visible, onSelect, onClose }: ExercisePickerProps) {
+export function ExercisePicker({ visible, onSelect, onClose, defaultCategory }: ExercisePickerProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | null>(null);
+  const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  const exercisesQuery = useExercises(selectedCategory ?? undefined);
+  const exercisesQuery = useExercises(defaultCategory);
   const searchResults = useExerciseSearch(searchQuery);
   const createExercise = useCreateExercise();
 
   const isSearching = searchQuery.length > 0;
-  const exercises = useMemo(() => {
+
+  const baseExercises = useMemo(() => {
     const data = isSearching ? (searchResults.data ?? []) : (exercisesQuery.data ?? []);
-    if (isSearching && selectedCategory) {
-      return data.filter((e) => e.category === selectedCategory);
+    // When searching, still restrict to the workout's category if provided
+    return isSearching && defaultCategory
+      ? data.filter((e) => e.category === defaultCategory)
+      : data;
+  }, [isSearching, searchResults.data, exercisesQuery.data, defaultCategory]);
+
+  // Derive available muscle groups from the full category list (not search results)
+  const availableMuscles = useMemo(() => {
+    const all = exercisesQuery.data ?? [];
+    const muscles = new Set<MuscleGroup>();
+    for (const ex of all) {
+      for (const m of ex.primaryMuscles) muscles.add(m);
     }
-    return data;
-  }, [isSearching, searchResults.data, exercisesQuery.data, selectedCategory]);
+    return MUSCLE_GROUP_ORDER.filter((m) => muscles.has(m));
+  }, [exercisesQuery.data]);
+
+  // Apply muscle group filter on top
+  const exercises = useMemo(() => {
+    if (!selectedMuscle) return baseExercises;
+    return baseExercises.filter((e) => e.primaryMuscles.includes(selectedMuscle));
+  }, [baseExercises, selectedMuscle]);
 
   const handleSelect = (exercise: Exercise) => {
     onSelect(exercise);
     setSearchQuery('');
-    setSelectedCategory(null);
+    setSelectedMuscle(null);
     onClose();
   };
 
   const handleClose = () => {
     setSearchQuery('');
-    setSelectedCategory(null);
+    setSelectedMuscle(null);
     onClose();
   };
 
@@ -84,23 +97,38 @@ export function ExercisePicker({ visible, onSelect, onClose }: ExercisePickerPro
             </View>
           </View>
 
-          {/* Category chips */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="grow-0 px-4 py-2" contentContainerClassName="gap-1.5 items-center">
-            {CATEGORIES.map((cat) => {
-              const isActive = selectedCategory === cat.value;
-              return (
-                <Pressable
-                  key={cat.label}
-                  onPress={() => setSelectedCategory(cat.value)}
-                  className={`rounded-full px-3 py-1.5 ${isActive ? 'bg-primary' : 'bg-background-50'}`}
-                >
-                  <Text className={`text-xs font-medium ${isActive ? 'text-background' : 'text-foreground-muted'}`}>
-                    {cat.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
+          {/* Muscle group pills */}
+          {availableMuscles.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="grow-0 px-4 py-2"
+              contentContainerClassName="gap-1.5 items-center"
+            >
+              <Pressable
+                onPress={() => setSelectedMuscle(null)}
+                className={`rounded-full px-3 py-1.5 ${selectedMuscle === null ? 'bg-primary' : 'bg-background-50'}`}
+              >
+                <Text className={`text-xs font-medium ${selectedMuscle === null ? 'text-background' : 'text-foreground-muted'}`}>
+                  All
+                </Text>
+              </Pressable>
+              {availableMuscles.map((muscle) => {
+                const isActive = selectedMuscle === muscle;
+                return (
+                  <Pressable
+                    key={muscle}
+                    onPress={() => setSelectedMuscle(isActive ? null : muscle)}
+                    className={`rounded-full px-3 py-1.5 ${isActive ? 'bg-primary' : 'bg-background-50'}`}
+                  >
+                    <Text className={`text-xs font-medium ${isActive ? 'text-background' : 'text-foreground-muted'}`}>
+                      {MUSCLE_GROUP_LABELS[muscle]}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          )}
 
           {/* Exercise list */}
           <FlatList

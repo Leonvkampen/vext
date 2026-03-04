@@ -139,34 +139,107 @@ export async function getCurrentStreak(db: SQLite.SQLiteDatabase): Promise<numbe
 
 export interface WeeklyStats {
   workoutsThisWeek: number;
+  setsThisWeek: number;
   volumeThisWeek: number;
 }
 
-export async function getWeeklyStats(db: SQLite.SQLiteDatabase): Promise<WeeklyStats> {
-  const weekStart = "date('now', 'weekday 0', '-6 days')";
-
-  const workoutsRow = await db.getFirstAsync<{ count: number }>(
-    `SELECT COUNT(*) AS count
-     FROM workouts
-     WHERE status = 'completed'
-       AND date(started_at) >= ${weekStart}`
-  );
-
-  const volumeRow = await db.getFirstAsync<{ total: number | null }>(
-    `SELECT SUM(ws.weight_kg * ws.reps) AS total
-     FROM workout_sets ws
-     JOIN workout_exercises we ON we.id = ws.workout_exercise_id
-     JOIN workouts w ON w.id = we.workout_id
+export async function getWeeklyStats(
+  db: SQLite.SQLiteDatabase,
+  weekStart: string,
+  weekEnd: string
+): Promise<WeeklyStats> {
+  const row = await db.getFirstAsync<{ workout_count: number; set_count: number; total_volume: number | null }>(
+    `SELECT
+       COUNT(DISTINCT w.id)                           AS workout_count,
+       COUNT(ws.id)                                   AS set_count,
+       COALESCE(SUM(ws.weight_kg * ws.reps), 0)       AS total_volume
+     FROM workouts w
+     LEFT JOIN workout_exercises we ON we.workout_id = w.id
+     LEFT JOIN workout_sets ws ON ws.workout_exercise_id = we.id
      WHERE w.status = 'completed'
-       AND date(w.started_at) >= ${weekStart}
-       AND ws.weight_kg IS NOT NULL
-       AND ws.reps IS NOT NULL`
+       AND date(w.started_at) BETWEEN ? AND ?`,
+    weekStart,
+    weekEnd
   );
 
   return {
-    workoutsThisWeek: workoutsRow?.count ?? 0,
-    volumeThisWeek: volumeRow?.total ?? 0,
+    workoutsThisWeek: row?.workout_count ?? 0,
+    setsThisWeek: row?.set_count ?? 0,
+    volumeThisWeek: row?.total_volume ?? 0,
   };
+}
+
+export async function getWeeklySetsByMuscleGroup(
+  db: SQLite.SQLiteDatabase,
+  weekStart: string,
+  weekEnd: string
+): Promise<Record<string, number>> {
+  const rows = await db.getAllAsync<{ muscle_group: string; set_count: number }>(
+    `SELECT jm.value AS muscle_group, COUNT(ws.id) AS set_count
+     FROM workout_sets ws
+     JOIN workout_exercises we ON we.id = ws.workout_exercise_id
+     JOIN workouts w ON w.id = we.workout_id
+     JOIN exercises e ON e.id = we.exercise_id
+     JOIN json_each(e.primary_muscles) jm
+     WHERE w.status = 'completed'
+       AND date(w.started_at) BETWEEN ? AND ?
+     GROUP BY jm.value
+     ORDER BY set_count DESC`,
+    weekStart,
+    weekEnd
+  );
+  const result: Record<string, number> = {};
+  for (const row of rows) result[row.muscle_group] = row.set_count;
+  return result;
+}
+
+export async function getWeeklyPRCount(
+  db: SQLite.SQLiteDatabase,
+  weekStart: string,
+  weekEnd: string
+): Promise<number> {
+  // A PR is only counted when the max weight this week exceeds the max weight
+  // from the most recent previous workout for that exercise.
+  // New exercises (no prior history) are excluded via INNER JOIN.
+  const row = await db.getFirstAsync<{ pr_count: number }>(
+    `WITH period_max AS (
+       SELECT we.exercise_id, MAX(ws.weight_kg) AS max_weight
+       FROM workout_sets ws
+       JOIN workout_exercises we ON we.id = ws.workout_exercise_id
+       JOIN workouts w ON w.id = we.workout_id
+       WHERE w.status = 'completed'
+         AND date(w.started_at) BETWEEN ? AND ?
+         AND ws.weight_kg IS NOT NULL
+       GROUP BY we.exercise_id
+     ),
+     last_workout_per_exercise AS (
+       SELECT we.exercise_id, MAX(w.completed_at) AS last_completed_at
+       FROM workout_exercises we
+       JOIN workouts w ON w.id = we.workout_id
+       WHERE w.status = 'completed'
+         AND date(w.started_at) < ?
+       GROUP BY we.exercise_id
+     ),
+     last_workout_max AS (
+       SELECT we.exercise_id, MAX(ws.weight_kg) AS max_weight
+       FROM workout_sets ws
+       JOIN workout_exercises we ON we.id = ws.workout_exercise_id
+       JOIN workouts w ON w.id = we.workout_id
+       JOIN last_workout_per_exercise lwe
+         ON lwe.exercise_id = we.exercise_id
+         AND lwe.last_completed_at = w.completed_at
+       WHERE ws.weight_kg IS NOT NULL
+       GROUP BY we.exercise_id
+     )
+     SELECT COUNT(*) AS pr_count
+     FROM period_max pm
+     JOIN last_workout_max lwm ON lwm.exercise_id = pm.exercise_id
+     WHERE pm.max_weight > lwm.max_weight`,
+    weekStart,
+    weekEnd,
+    weekStart
+  );
+  return row?.pr_count ?? 0;
 }
 
 export async function getTodayStats(db: SQLite.SQLiteDatabase): Promise<TodayStats> {
