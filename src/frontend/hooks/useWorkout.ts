@@ -83,13 +83,6 @@ export function useRemoveSet(workoutId: string) {
   });
 }
 
-export function useUpdateElapsedSeconds(workoutId: string) {
-  const db = useDatabase();
-  return useMutation({
-    mutationFn: (seconds: number) =>
-      workoutService.updateElapsedSeconds(db, workoutId, seconds),
-  });
-}
 
 export function useReorderExercises(workoutId: string) {
   const db = useDatabase();

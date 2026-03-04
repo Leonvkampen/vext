@@ -114,7 +114,7 @@ export default function WorkoutsScreen() {
   return (
     <View className="flex-1 bg-background">
       <View className="px-4 py-3">
-        <Text className="text-2xl font-bold text-foreground">History</Text>
+        <Text className="text-2xl font-bold text-foreground">Workouts</Text>
       </View>
 
       <FlatList

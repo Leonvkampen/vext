@@ -21,16 +21,13 @@ import {
   useDiscardWorkout,
   useUpdateWorkoutExerciseRestSeconds,
   useUpdateExerciseTargetReps,
-  useUpdateElapsedSeconds,
 } from '@frontend/hooks/useWorkout';
 import { usePreviousSetsForExercises } from '@frontend/hooks/useHistory';
 import type { Exercise } from '@shared/types/exercise';
 import type { WorkoutFull } from '@shared/types/workout';
 import { cn } from '@frontend/lib/utils';
 import { useExerciseOrderStore } from '@frontend/hooks/useExerciseOrderStore';
-import { useWorkoutTimer } from '@frontend/hooks/useWorkoutTimer';
-
-/** Inner component — only mounts once workout data is available, so useWorkoutTimer gets the correct initialElapsed. */
+/** Inner component — only mounts once workout data is available. */
 function ActiveWorkoutContent({ workout, id }: { workout: WorkoutFull; id: string }) {
   const router = useRouter();
   const [showExercisePicker, setShowExercisePicker] = useState(false);
@@ -52,14 +49,6 @@ function ActiveWorkoutContent({ workout, id }: { workout: WorkoutFull; id: strin
   const discardWorkout = useDiscardWorkout();
   const updateRestSeconds = useUpdateWorkoutExerciseRestSeconds(id);
   const updateTargetReps = useUpdateExerciseTargetReps(id);
-  const updateElapsed = useUpdateElapsedSeconds(id);
-
-  const { elapsed, clear: clearTimer } = useWorkoutTimer(
-    id,
-    workout.elapsedSeconds,
-    (seconds) => updateElapsed.mutate(seconds)
-  );
-
   const optimisticOrder = useExerciseOrderStore((s) => s.orders[id]);
   const setOrder = useExerciseOrderStore((s) => s.setOrder);
 
@@ -87,7 +76,6 @@ function ActiveWorkoutContent({ workout, id }: { workout: WorkoutFull; id: strin
   const handleComplete = async () => {
     try {
       await completeWorkout.mutateAsync(id);
-      clearTimer(id);
       router.replace('/(tabs)/workouts');
     } catch {
       // mutation errors shown inline via completeWorkout.error
@@ -96,7 +84,6 @@ function ActiveWorkoutContent({ workout, id }: { workout: WorkoutFull; id: strin
 
   const handleDiscard = async () => {
     await discardWorkout.mutateAsync(id);
-    clearTimer(id);
     setShowDiscardConfirm(false);
     router.replace('/(tabs)');
   };
@@ -108,7 +95,6 @@ function ActiveWorkoutContent({ workout, id }: { workout: WorkoutFull; id: strin
       <ActiveWorkoutHeader
         workoutName={workout.name}
         workoutTypeName={workout.workoutType.name}
-        elapsed={elapsed}
       />
 
       <ScrollView
