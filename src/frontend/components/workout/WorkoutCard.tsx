@@ -39,8 +39,8 @@ export function WorkoutCard({ workout, onPress, onRepeat, onContinue, onDelete, 
         </View>
       </View>
 
-      <View className="mt-3 flex-row items-center">
-        <View className="flex-1 flex-row gap-4">
+      <View className="mt-3 flex-row items-start">
+        <View className="flex-1 gap-1.5">
           <View className="flex-row items-center gap-1">
             <Ionicons name="time-outline" size={14} color="rgb(163, 163, 163)" />
             <Text className="text-xs text-foreground-muted">{formatDuration(duration)}</Text>
