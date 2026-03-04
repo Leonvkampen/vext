@@ -93,7 +93,7 @@ export const SupersetCard = React.memo(function SupersetCard({
   return (
     <View className="mb-4 rounded-xl bg-background-50 p-4">
       {/* Header */}
-      <View className="flex-row items-center mb-3 gap-2 flex-wrap">
+      <View className="flex-row items-center mb-3 gap-2">
         {(onMoveUp || onMoveDown) && (
           <View className="flex-row items-center gap-1">
             <Pressable onPress={onMoveUp} disabled={!onMoveUp} className="p-1.5">
