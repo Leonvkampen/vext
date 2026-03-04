@@ -127,13 +127,16 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* Total sets */}
+        <View className="mx-4 mt-3 rounded-xl bg-background-50 p-4 flex-row items-center justify-between">
+          <Text className="text-sm text-foreground-muted">Total sets</Text>
+          <Text className="text-xl font-bold text-foreground">{weeklyStats?.setsThisWeek ?? 0}</Text>
+        </View>
+
         {/* Muscle groups */}
         {weeklyMuscleGroups && Object.keys(weeklyMuscleGroups).length > 0 && (
-          <View className="mx-4 mt-4 rounded-xl bg-background-50 p-4">
-            <View className="flex-row items-baseline justify-between mb-3">
-              <Text className="text-sm font-medium text-foreground-muted">Sets by Muscle Group</Text>
-              <Text className="text-sm font-semibold text-foreground">{weeklyStats?.setsThisWeek ?? 0} total</Text>
-            </View>
+          <View className="mx-4 mt-3 rounded-xl bg-background-50 p-4">
+            <Text className="text-sm font-medium text-foreground-muted mb-3">Sets by Muscle Group</Text>
             <View className="gap-2">
               {Object.entries(weeklyMuscleGroups).map(([muscle, count]) => (
                 <View key={muscle} className="flex-row items-center justify-between">
