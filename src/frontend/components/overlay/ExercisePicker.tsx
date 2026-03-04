@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useExercises, useExerciseSearch, useCreateExercise } from '@frontend/hooks/useExercises';
 import { ExerciseForm } from '@frontend/components/overlay/ExerciseForm';
 import { EQUIPMENT_LABELS } from '@shared/constants/equipment';
-import { MUSCLE_GROUP_LABELS } from '@shared/constants/muscleGroups';
+import { MUSCLE_GROUP_LABELS, MUSCLE_GROUP_ORDER } from '@shared/constants/muscleGroups';
 import type { Exercise, ExerciseCategory, MuscleGroup } from '@shared/types/exercise';
 
 type ExercisePickerProps = {
@@ -42,7 +42,7 @@ export function ExercisePicker({ visible, onSelect, onClose, defaultCategory }: 
     for (const ex of all) {
       for (const m of ex.primaryMuscles) muscles.add(m);
     }
-    return Array.from(muscles).sort();
+    return MUSCLE_GROUP_ORDER.filter((m) => muscles.has(m));
   }, [exercisesQuery.data]);
 
   // Apply muscle group filter on top

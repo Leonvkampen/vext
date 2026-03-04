@@ -16,3 +16,18 @@ export const MUSCLE_GROUP_LABELS: Record<MuscleGroup, string> = {
 };
 
 export const ALL_MUSCLE_GROUPS = Object.values(MuscleGroup);
+
+/** Display order for muscle group pills and lists. */
+export const MUSCLE_GROUP_ORDER: MuscleGroup[] = [
+  MuscleGroup.Chest,
+  MuscleGroup.Back,
+  MuscleGroup.Triceps,
+  MuscleGroup.Biceps,
+  MuscleGroup.Shoulders,
+  MuscleGroup.Quads,
+  MuscleGroup.Hamstrings,
+  MuscleGroup.Core,
+  MuscleGroup.Glutes,
+  MuscleGroup.Calves,
+  MuscleGroup.FullBody,
+];
