@@ -23,8 +23,16 @@ import {
   useUpdateExerciseTargetReps,
 } from '@frontend/hooks/useWorkout';
 import { usePreviousSetsForExercises } from '@frontend/hooks/useHistory';
+import { ExerciseCategory } from '@shared/types/exercise';
 import type { Exercise } from '@shared/types/exercise';
-import type { WorkoutFull } from '@shared/types/workout';
+import type { WorkoutFull, WorkoutFieldDefinition } from '@shared/types/workout';
+
+function categoryFromFields(fields: WorkoutFieldDefinition[]): ExerciseCategory | undefined {
+  if (fields.some((f) => f.name === 'weight')) return ExerciseCategory.Strength;
+  if (fields.some((f) => f.type === 'distance')) return ExerciseCategory.Cardio;
+  if (fields.some((f) => f.type === 'duration')) return ExerciseCategory.Flexibility;
+  return undefined;
+}
 import { cn } from '@frontend/lib/utils';
 import { useExerciseOrderStore } from '@frontend/hooks/useExerciseOrderStore';
 /** Inner component — only mounts once workout data is available. */
@@ -172,6 +180,7 @@ function ActiveWorkoutContent({ workout, id }: { workout: WorkoutFull; id: strin
         visible={showExercisePicker}
         onSelect={handleAddExercise}
         onClose={() => setShowExercisePicker(false)}
+        defaultCategory={categoryFromFields(workout.workoutType.fields)}
       />
 
       <ConfirmDialog
