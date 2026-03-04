@@ -189,6 +189,17 @@ export async function addExerciseToSuperset(
   const nextPosition = existing.length + 1;
   const newEx = await addExerciseToWorkout(db, workoutId, newExerciseId);
   await workoutExercise.assignToSuperset(db, newEx.id, groupId, nextPosition);
+
+  // Pre-create empty sets to match existing round count so inputs appear immediately
+  if (existing.length > 0) {
+    const setCounts = await Promise.all(
+      existing.map((ex) => workoutSet.getByWorkoutExercise(db, ex.id).then((s) => s.length))
+    );
+    const maxRounds = Math.max(0, ...setCounts);
+    for (let i = 0; i < maxRounds; i++) {
+      await workoutSet.add(db, newEx.id);
+    }
+  }
 }
 
 export async function disbandSuperset(

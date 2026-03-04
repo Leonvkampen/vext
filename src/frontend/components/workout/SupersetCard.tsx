@@ -139,20 +139,25 @@ export const SupersetCard = React.memo(function SupersetCard({
 
           {exercises.map((ex) => {
             const set = ex.sets[roundIndex];
-            const previousSets = previousSetsMap.get(ex.exerciseId);
-            const previousSet = previousSets?.[roundIndex];
+            const firstPreviousSet = previousSetsMap.get(ex.exerciseId)?.[0];
 
             return (
               <View key={ex.id}>
-                {/* Exercise label */}
-                <Text className="text-xs font-medium text-foreground-muted ml-10 mb-0.5">
-                  {ex.exerciseName}
-                </Text>
+                {/* Exercise label + last time inline */}
+                <View className="flex-row items-baseline justify-between ml-10 mb-0.5 pr-1">
+                  <Text className="text-xs font-medium text-foreground-muted">{ex.exerciseName}</Text>
+                  {firstPreviousSet && (
+                    <Text className="text-xs text-foreground-subtle ml-2 shrink-0">
+                      {isStrength
+                        ? `last: ${firstPreviousSet.weightKg ?? 0}kg × ${firstPreviousSet.reps ?? 0}`
+                        : `last: ${firstPreviousSet.durationSeconds ?? 0}s${firstPreviousSet.distanceMeters != null ? ` · ${firstPreviousSet.distanceMeters}m` : ''}`}
+                    </Text>
+                  )}
+                </View>
 
                 {set ? (
                   <SetRow
                     set={set}
-                    previousSet={previousSet}
                     setNumber={set.setNumber}
                     isStrength={isStrength}
                     targetRepsMin={ex.targetRepsMin}
