@@ -31,17 +31,6 @@ function mapRow(row: WorkoutRow): Workout {
   };
 }
 
-export async function updateElapsedSeconds(
-  db: SQLite.SQLiteDatabase,
-  id: string,
-  seconds: number
-): Promise<void> {
-  await db.runAsync(
-    `UPDATE workouts SET elapsed_seconds = ? WHERE id = ?`,
-    seconds,
-    id
-  );
-}
 
 export async function create(
   db: SQLite.SQLiteDatabase,
