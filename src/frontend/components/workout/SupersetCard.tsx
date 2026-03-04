@@ -93,26 +93,20 @@ export const SupersetCard = React.memo(function SupersetCard({
   return (
     <View className="mb-4 rounded-xl bg-background-50 p-4">
       {/* Header */}
-      <View className="flex-row items-center justify-between mb-2">
-        <View className="flex-row items-center flex-1 gap-2">
-          {(onMoveUp || onMoveDown) && (
-            <View className="flex-row items-center gap-2">
-              <Pressable onPress={onMoveUp} disabled={!onMoveUp} className="p-1.5">
-                <Ionicons name="chevron-up" size={18} color={onMoveUp ? 'rgb(163, 163, 163)' : 'rgb(64, 64, 64)'} />
-              </Pressable>
-              <Pressable onPress={onMoveDown} disabled={!onMoveDown} className="p-1.5">
-                <Ionicons name="chevron-down" size={18} color={onMoveDown ? 'rgb(163, 163, 163)' : 'rgb(64, 64, 64)'} />
-              </Pressable>
-            </View>
-          )}
-          <View className="rounded-full bg-primary/20 px-2.5 py-0.5">
-            <Text className="text-xs font-bold text-primary">Superset</Text>
+      <View className="flex-row items-center mb-3 gap-2 flex-wrap">
+        {(onMoveUp || onMoveDown) && (
+          <View className="flex-row items-center gap-1">
+            <Pressable onPress={onMoveUp} disabled={!onMoveUp} className="p-1.5">
+              <Ionicons name="chevron-up" size={18} color={onMoveUp ? 'rgb(163, 163, 163)' : 'rgb(64, 64, 64)'} />
+            </Pressable>
+            <Pressable onPress={onMoveDown} disabled={!onMoveDown} className="p-1.5">
+              <Ionicons name="chevron-down" size={18} color={onMoveDown ? 'rgb(163, 163, 163)' : 'rgb(64, 64, 64)'} />
+            </Pressable>
           </View>
+        )}
+        <View className="rounded-full bg-primary/20 px-2.5 py-0.5">
+          <Text className="text-xs font-bold text-primary">Superset</Text>
         </View>
-      </View>
-
-      {/* Badges row */}
-      <View className="flex-row items-center gap-2 mb-3 flex-wrap">
         <Pressable
           onPress={() => setEditingRest(!editingRest)}
           className="flex-row items-center rounded-full bg-background-100 px-3 py-1"
@@ -122,7 +116,6 @@ export const SupersetCard = React.memo(function SupersetCard({
             {localRestSeconds === 0 ? 'No rest' : `${localRestSeconds}s rest`}
           </Text>
         </Pressable>
-
         {isStrength && (
           <Pressable
             onPress={() => setShowRepGoalDialog(true)}
@@ -154,24 +147,6 @@ export const SupersetCard = React.memo(function SupersetCard({
           >
             <Text className="text-sm text-foreground-muted">+15s</Text>
           </Pressable>
-        </View>
-      )}
-
-      {/* Global column header */}
-      {numRounds > 0 && (
-        <View className="flex-row items-center py-1 gap-2 mb-1">
-          {isStrength ? (
-            <>
-              <Text className="flex-1 text-center text-xs text-foreground-subtle">Weight</Text>
-              <Text className="text-xs text-foreground-subtle" />
-              <Text className="flex-1 text-center text-xs text-foreground-subtle">Reps</Text>
-            </>
-          ) : (
-            <>
-              <Text className="flex-1 text-center text-xs text-foreground-subtle">Duration</Text>
-              <Text className="flex-1 text-center text-xs text-foreground-subtle">Distance</Text>
-            </>
-          )}
         </View>
       )}
 
