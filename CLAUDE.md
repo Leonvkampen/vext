@@ -4,10 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
+**Always use `pnpm` variants — never suggest `npx`, `yarn`, or bare `expo` commands.**
+
 - `pnpm start` — Start dev client (`expo start --dev-client`)
 - `pnpm start -- --clear` — Start with Metro cache cleared (use after dependency changes)
 - `pnpm android` — Build and run native Android debug build
 - `pnpm ios` — Build and run native iOS debug build
+- `pnpm exec expo prebuild --platform android --clean` — Regenerate Android native project
+- `pnpm exec expo prebuild --clean` — Regenerate all native projects
 
 No test runner or linter is configured yet.
 
@@ -15,7 +19,7 @@ No test runner or linter is configured yet.
 
 GitHub Actions (`.github/workflows/build-android.yml`) builds Android APKs. Push to `master` triggers a debug test build, manual dispatch triggers a staging release build, and pushing a `v*` tag triggers a production release build with a GitHub Release.
 
-Release signing is handled by the Expo config plugin `plugins/withReleaseSigning.js` which reads keystore credentials from environment variables (set via GitHub Secrets in CI) and falls back to the debug keystore locally. The native `android/` directory is not committed — it's generated via `npx expo prebuild` in CI.
+Release signing is handled by the Expo config plugin `plugins/withReleaseSigning.js` which reads keystore credentials from environment variables (set via GitHub Secrets in CI) and falls back to the debug keystore locally. The native `android/` directory is not committed — it's generated via `pnpm exec expo prebuild` in CI.
 
 ## Architecture
 

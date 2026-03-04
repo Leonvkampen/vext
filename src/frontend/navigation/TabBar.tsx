@@ -47,10 +47,10 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                   router.push('/workout/new');
                 }}
-                className="absolute -top-7 w-14 h-14 rounded-full bg-primary items-center justify-center shadow-lg"
+                className="absolute -top-12 items-center justify-center rounded-full bg-primary h-12 shadow-lg w-[180px]"
                 style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.95 : 1 }] })}
               >
-                <Ionicons name="add" size={28} color="rgb(10, 10, 15)" />
+                <Text className="text-base font-semibold text-background">Start Workout</Text>
               </Pressable>
               {/* Tab item below FAB */}
               <Pressable onPress={onPress} className="items-center pt-4 mt-2">

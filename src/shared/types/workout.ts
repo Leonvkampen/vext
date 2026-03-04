@@ -29,6 +29,8 @@ export interface Workout {
   completedAt: string | null;
   notes: string | null;
   createdAt: string;
+  elapsedSeconds: number;
+  lastStartedAt: string | null;
 }
 
 export interface WorkoutExercise {
@@ -79,6 +81,7 @@ export interface WorkoutSummary {
   exerciseCount: number;
   setCount: number;
   totalVolume: number;
+  elapsedSeconds: number;
 }
 
 /** Grouped repeated workouts for history list */

@@ -1,15 +1,10 @@
-/** Home screen - dashboard with today's stats, streaks, weekly summary, and recent workouts. */
-import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
+/** Home screen - dashboard with today's stats, streaks, and weekly summary. */
+import React from 'react';
+import { View, Text, ScrollView } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import * as progressService from '@backend/services/progressService';
-import * as workoutService from '@backend/services/workoutService';
 import { useDatabase } from '@frontend/hooks/useDatabase';
-import { WorkoutCard } from '@frontend/components/workout/WorkoutCard';
-import { ConfirmDialog } from '@frontend/components/overlay/ConfirmDialog';
-import { useContinueWorkout, useForceContinueWorkout } from '@frontend/hooks/useWorkout';
 import { useSettingsStore } from '@backend/store/settingsStore';
 
 function getGreeting(): string {
@@ -21,27 +16,7 @@ function getGreeting(): string {
 
 export default function HomeScreen() {
   const db = useDatabase();
-  const router = useRouter();
   const units = useSettingsStore((s) => s.units);
-  const continueWorkout = useContinueWorkout();
-  const forceContinueWorkout = useForceContinueWorkout();
-  const [confirmContinueId, setConfirmContinueId] = useState<string | null>(null);
-
-  const handleContinue = async (workoutId: string) => {
-    const result = await continueWorkout.mutateAsync(workoutId);
-    if (result.success) {
-      router.replace(`/workout/${workoutId}`);
-    } else {
-      setConfirmContinueId(workoutId);
-    }
-  };
-
-  const handleForceContinue = async () => {
-    if (!confirmContinueId) return;
-    await forceContinueWorkout.mutateAsync(confirmContinueId);
-    setConfirmContinueId(null);
-    router.replace(`/workout/${confirmContinueId}`);
-  };
 
   const { data: todayStats } = useQuery({
     queryKey: ['todayStats'],
@@ -58,12 +33,6 @@ export default function HomeScreen() {
   const { data: weeklyStats } = useQuery({
     queryKey: ['weeklyStats'],
     queryFn: () => progressService.getWeeklyStats(db),
-    staleTime: 60 * 1000,
-  });
-
-  const { data: recentWorkouts } = useQuery({
-    queryKey: ['recentWorkouts'],
-    queryFn: () => workoutService.getWorkoutSummaries(db, 3, 0),
     staleTime: 60 * 1000,
   });
 
@@ -121,50 +90,7 @@ export default function HomeScreen() {
             </View>
           </View>
         </View>
-
-        {/* Recent workouts */}
-        <View className="px-4 mt-4">
-          <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-sm font-medium text-foreground-muted">Recent Workouts</Text>
-            {(recentWorkouts?.length ?? 0) > 0 && (
-              <Pressable onPress={() => router.push('/(tabs)/workouts')}>
-                <Text className="text-xs text-primary">See all</Text>
-              </Pressable>
-            )}
-          </View>
-
-          {recentWorkouts && recentWorkouts.length > 0 ? (
-            recentWorkouts.map((w) => (
-              <WorkoutCard key={w.id} workout={w} onPress={() => router.push('/(tabs)/workouts')} onContinue={() => handleContinue(w.id)} />
-            ))
-          ) : (
-            <View className="rounded-xl bg-background-50 p-6 items-center">
-              <Ionicons name="fitness-outline" size={40} color="rgb(115, 115, 115)" />
-              <Text className="mt-3 text-base font-semibold text-foreground">Ready to start?</Text>
-              <Text className="mt-1 text-sm text-foreground-muted text-center">
-                Tap the + button below to begin your first workout
-              </Text>
-              <Pressable
-                onPress={() => router.push('/workout/new')}
-                className="mt-4 rounded-lg bg-primary px-6 py-3"
-              >
-                <Text className="font-semibold text-background">Start Workout</Text>
-              </Pressable>
-            </View>
-          )}
-        </View>
       </ScrollView>
-
-      {/* Confirm discard active workout to continue */}
-      <ConfirmDialog
-        visible={!!confirmContinueId}
-        title="Active Workout in Progress"
-        message="You have an active workout. Discard it and continue this one?"
-        confirmLabel="Discard & Continue"
-        destructive
-        onConfirm={handleForceContinue}
-        onCancel={() => setConfirmContinueId(null)}
-      />
     </View>
   );
 }

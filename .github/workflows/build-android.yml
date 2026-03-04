@@ -8,6 +8,8 @@ on:
   push:
     branches: [master]
     tags: ['v*']
+  pull_request:
+    branches: [master]
   workflow_dispatch:
 
 permissions: {}
@@ -28,7 +30,7 @@ jobs:
             VERSION="${GITHUB_REF#refs/tags/v}"
             echo "environment=production" >> "$GITHUB_OUTPUT"
             echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+          elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" || ( "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == "refs/heads/master" ) ]]; then
             echo "environment=staging" >> "$GITHUB_OUTPUT"
             echo "version=" >> "$GITHUB_OUTPUT"
           else
@@ -90,6 +92,33 @@ jobs:
             config.expo.android.versionCode = parseInt(process.env.VERSION_CODE);
             fs.writeFileSync('app.json', JSON.stringify(config, null, 2) + '\n');
             console.log('Set version ' + process.env.VERSION + ' (code ' + process.env.VERSION_CODE + ')');
+          "
+
+      # ── App ID overrides ──
+      - name: Set production application ID
+        if: steps.env.outputs.environment == 'production'
+        run: |
+          node -e "
+            const fs = require('fs');
+            const config = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+            config.expo.name = 'Vext';
+            config.expo.android = config.expo.android || {};
+            config.expo.android.package = 'com.anonymous.vext';
+            fs.writeFileSync('app.json', JSON.stringify(config, null, 2) + '\n');
+            console.log('Set production app ID: com.anonymous.vext');
+          "
+
+      - name: Set staging application ID
+        if: steps.env.outputs.environment == 'staging'
+        run: |
+          node -e "
+            const fs = require('fs');
+            const config = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+            config.expo.name = 'Vext Staging';
+            config.expo.android = config.expo.android || {};
+            config.expo.android.package = 'com.anonymous.vext.staging';
+            fs.writeFileSync('app.json', JSON.stringify(config, null, 2) + '\n');
+            console.log('Set staging app ID: com.anonymous.vext.staging');
           "
 
       # ── Generate native project ──

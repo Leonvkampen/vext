@@ -17,9 +17,11 @@ type WorkoutCardProps = {
 
 export function WorkoutCard({ workout, onPress, onRepeat, onContinue, onDelete, sessionCount }: WorkoutCardProps) {
   const units = useSettingsStore((s) => s.units);
-  const duration = workout.completedAt
-    ? Math.floor((parseUTCTimestamp(workout.completedAt).getTime() - parseUTCTimestamp(workout.startedAt).getTime()) / 1000)
-    : 0;
+  const duration = workout.elapsedSeconds > 0
+    ? workout.elapsedSeconds
+    : workout.completedAt
+      ? Math.floor((parseUTCTimestamp(workout.completedAt).getTime() - parseUTCTimestamp(workout.startedAt).getTime()) / 1000)
+      : 0;
 
   return (
     <Pressable onPress={onPress} className="mb-3 rounded-xl bg-background-50 p-4">
@@ -39,8 +41,8 @@ export function WorkoutCard({ workout, onPress, onRepeat, onContinue, onDelete, 
         </View>
       </View>
 
-      <View className="mt-3 flex-row items-center">
-        <View className="flex-1 flex-row gap-4">
+      <View className="mt-3 flex-row items-start">
+        <View className="flex-1 gap-1.5">
           <View className="flex-row items-center gap-1">
             <Ionicons name="time-outline" size={14} color="rgb(163, 163, 163)" />
             <Text className="text-xs text-foreground-muted">{formatDuration(duration)}</Text>

@@ -12,6 +12,7 @@ import type { WorkoutSetInput } from '@backend/models/workoutSet';
 import type { Workout, WorkoutExercise, WorkoutSet, WorkoutFull, WorkoutSummary } from '@shared/types/workout';
 import { WorkoutStatus } from '@shared/types/workout';
 
+
 export async function startWorkout(
   db: SQLite.SQLiteDatabase,
   typeId: string,
@@ -233,6 +234,7 @@ export async function getWorkoutSummaries(
     exercise_count: number;
     set_count: number;
     total_volume: number | null;
+    elapsed_seconds: number;
   };
 
   const rows = await db.getAllAsync<SummaryRow>(
@@ -243,6 +245,7 @@ export async function getWorkoutSummaries(
        w.status,
        w.started_at,
        w.completed_at,
+       w.elapsed_seconds,
        COUNT(DISTINCT we.id)                        AS exercise_count,
        COUNT(ws.id)                                 AS set_count,
        COALESCE(SUM(ws.weight_kg * ws.reps), 0)     AS total_volume
@@ -269,6 +272,7 @@ export async function getWorkoutSummaries(
     exerciseCount: row.exercise_count,
     setCount: row.set_count,
     totalVolume: row.total_volume ?? 0,
+    elapsedSeconds: row.elapsed_seconds,
   }));
 }
 

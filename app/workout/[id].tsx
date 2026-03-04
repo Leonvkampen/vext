@@ -24,39 +24,35 @@ import {
 } from '@frontend/hooks/useWorkout';
 import { usePreviousSetsForExercises } from '@frontend/hooks/useHistory';
 import type { Exercise } from '@shared/types/exercise';
+import type { WorkoutFull } from '@shared/types/workout';
 import { cn } from '@frontend/lib/utils';
 import { useExerciseOrderStore } from '@frontend/hooks/useExerciseOrderStore';
-
-export default function ActiveWorkoutScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+/** Inner component — only mounts once workout data is available. */
+function ActiveWorkoutContent({ workout, id }: { workout: WorkoutFull; id: string }) {
   const router = useRouter();
   const [showExercisePicker, setShowExercisePicker] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   const startTimer = useTimerStore((s) => s.startTimer);
-
-  const { data: workout, isLoading } = useFullWorkout(id);
   const exerciseIds = React.useMemo(
-    () => workout?.exercises.map((ex) => ex.exerciseId) ?? [],
-    [workout?.exercises]
+    () => workout.exercises.map((ex) => ex.exerciseId),
+    [workout.exercises]
   );
   const { data: previousSetsMap } = usePreviousSetsForExercises(exerciseIds);
-  const addExercise = useAddExercise(id!);
-  const logSet = useLogSet(id!);
-  const updateSet = useUpdateSet(id!);
-  const removeSet = useRemoveSet(id!);
-  const removeExercise = useRemoveExercise(id!);
-  const reorderExercises = useReorderExercises(id!);
+  const addExercise = useAddExercise(id);
+  const logSet = useLogSet(id);
+  const updateSet = useUpdateSet(id);
+  const removeSet = useRemoveSet(id);
+  const removeExercise = useRemoveExercise(id);
+  const reorderExercises = useReorderExercises(id);
   const completeWorkout = useCompleteWorkout();
   const discardWorkout = useDiscardWorkout();
-  const updateRestSeconds = useUpdateWorkoutExerciseRestSeconds(id!);
-  const updateTargetReps = useUpdateExerciseTargetReps(id!);
-
-  const optimisticOrder = useExerciseOrderStore((s) => s.orders[id!]);
+  const updateRestSeconds = useUpdateWorkoutExerciseRestSeconds(id);
+  const updateTargetReps = useUpdateExerciseTargetReps(id);
+  const optimisticOrder = useExerciseOrderStore((s) => s.orders[id]);
   const setOrder = useExerciseOrderStore((s) => s.setOrder);
 
   const exercises = React.useMemo(() => {
-    if (!workout) return [];
     if (!optimisticOrder) return workout.exercises;
     return optimisticOrder
       .map((eid) => workout.exercises.find((e) => e.id === eid))
@@ -68,39 +64,29 @@ export default function ActiveWorkoutScreen() {
   };
 
   const handleMoveExercise = (index: number, direction: 'up' | 'down') => {
-    if (!workout) return;
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= exercises.length) return;
     const newOrder = [...exercises];
     [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
     const orderedIds = newOrder.map((e) => e.id);
-    setOrder(id!, orderedIds);
+    setOrder(id, orderedIds);
     reorderExercises.mutate(orderedIds);
   };
 
   const handleComplete = async () => {
     try {
-      await completeWorkout.mutateAsync(id!);
+      await completeWorkout.mutateAsync(id);
       router.replace('/(tabs)/workouts');
-    } catch (e) {
+    } catch {
       // mutation errors shown inline via completeWorkout.error
-      if (__DEV__) console.warn('Complete workout failed:', e);
     }
   };
 
   const handleDiscard = async () => {
-    await discardWorkout.mutateAsync(id!);
+    await discardWorkout.mutateAsync(id);
     setShowDiscardConfirm(false);
     router.replace('/(tabs)');
   };
-
-  if (isLoading || !workout) {
-    return (
-      <View className="flex-1 bg-background items-center justify-center">
-        <ActivityIndicator color="rgb(52, 211, 153)" />
-      </View>
-    );
-  }
 
   const isStrength = workout.workoutType.name === 'Strength Training';
 
@@ -109,7 +95,6 @@ export default function ActiveWorkoutScreen() {
       <ActiveWorkoutHeader
         workoutName={workout.name}
         workoutTypeName={workout.workoutType.name}
-        startedAt={workout.startedAt}
       />
 
       <ScrollView
@@ -202,4 +187,19 @@ export default function ActiveWorkoutScreen() {
       <RestTimer />
     </View>
   );
+}
+
+export default function ActiveWorkoutScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { data: workout, isLoading } = useFullWorkout(id);
+
+  if (isLoading || !workout) {
+    return (
+      <View className="flex-1 bg-background items-center justify-center">
+        <ActivityIndicator color="rgb(52, 211, 153)" />
+      </View>
+    );
+  }
+
+  return <ActiveWorkoutContent workout={workout} id={id!} />;
 }

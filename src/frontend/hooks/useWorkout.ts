@@ -83,6 +83,7 @@ export function useRemoveSet(workoutId: string) {
   });
 }
 
+
 export function useReorderExercises(workoutId: string) {
   const db = useDatabase();
   const queryClient = useQueryClient();
@@ -90,7 +91,7 @@ export function useReorderExercises(workoutId: string) {
     mutationFn: (orderedIds: string[]) =>
       workoutService.reorderExercises(db, workoutId, orderedIds),
     onSettled: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['workout', workoutId] });
+      await queryClient.refetchQueries({ queryKey: ['workout', workoutId] });
       useExerciseOrderStore.getState().clearOrder(workoutId);
     },
   });
