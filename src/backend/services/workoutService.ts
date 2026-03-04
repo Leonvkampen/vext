@@ -1,4 +1,5 @@
 /** Workout service - orchestrates workout lifecycle, set logging, and exercise management. */
+import * as Crypto from 'expo-crypto';
 import type * as SQLite from 'expo-sqlite';
 import * as workout from '@backend/models/workout';
 import * as workoutExercise from '@backend/models/workoutExercise';
@@ -16,13 +17,14 @@ import { WorkoutStatus } from '@shared/types/workout';
 export async function startWorkout(
   db: SQLite.SQLiteDatabase,
   typeId: string,
-  name?: string | null
+  name?: string | null,
+  seriesId?: string | null
 ): Promise<Workout> {
   const active = await workout.getActive(db);
   if (active) {
     throw new Error('A workout is already in progress. Complete or discard it before starting a new one.');
   }
-  return workout.create(db, typeId, name);
+  return workout.create(db, typeId, name, seriesId);
 }
 
 export async function addExerciseToWorkout(
@@ -316,7 +318,14 @@ export async function repeatWorkout(
   const baseName = source.name || source.workoutType.name;
   const generatedName = `${baseName} (#${count})`;
 
-  const newWorkout = await startWorkout(db, source.workoutTypeId, generatedName);
+  // Inherit the source's series_id, or create a new series and tag the source too
+  let seriesId = source.seriesId;
+  if (!seriesId) {
+    seriesId = Crypto.randomUUID();
+    await db.runAsync(`UPDATE workouts SET series_id = ? WHERE id = ?`, seriesId, source.id);
+  }
+
+  const newWorkout = await startWorkout(db, source.workoutTypeId, generatedName, seriesId);
 
   for (const ex of source.exercises) {
     const newExercise = await addExerciseToWorkout(db, newWorkout.id, ex.exerciseId, ex.restSeconds, ex.targetRepsMin, ex.targetRepsMax);
@@ -332,9 +341,9 @@ export async function repeatWorkout(
 export async function getPreviousSetsForExercises(
   db: SQLite.SQLiteDatabase,
   exerciseIds: string[],
-  workoutTypeId?: string
+  seriesId?: string | null
 ): Promise<Map<string, WorkoutSet[]>> {
-  return workoutSet.getLatestSetsForExercises(db, exerciseIds, workoutTypeId);
+  return workoutSet.getLatestSetsForExercises(db, exerciseIds, seriesId);
 }
 
 export async function getFullWorkoutsByIds(

@@ -1,4 +1,5 @@
 /** Database migrations - schema versioning via PRAGMA user_version with sequential upgrades. */
+import * as Crypto from 'expo-crypto';
 import type * as SQLite from 'expo-sqlite';
 import { APP_CONFIG } from '@config/app';
 
@@ -104,6 +105,36 @@ const migrations: Migration[] = [
       ALTER TABLE workouts ADD COLUMN last_started_at TEXT;
       UPDATE workouts SET last_started_at = started_at;
     `);
+  },
+  // v5 -> v6: Add series_id to group repeated workouts into a series
+  async (db) => {
+    await db.execAsync(`ALTER TABLE workouts ADD COLUMN series_id TEXT;`);
+
+    // Retroactively assign series_ids to existing repeated workouts.
+    // Repeated workouts share a base name (strip trailing " (#N)") + workout_type_id.
+    const rows = await db.getAllAsync<{ id: string; workout_type_id: string; name: string | null }>(
+      `SELECT id, workout_type_id, name FROM workouts`
+    );
+
+    const stripSuffix = (name: string | null) => (name ?? '').replace(/\s*\(#\d+\)$/, '');
+    const hasRepeatSuffix = (name: string | null) => /\(#\d+\)/.test(name ?? '');
+
+    // Group by (workout_type_id, baseName)
+    const groups = new Map<string, { id: string; name: string | null }[]>();
+    for (const row of rows) {
+      const key = `${row.workout_type_id}::${stripSuffix(row.name)}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push({ id: row.id, name: row.name });
+    }
+
+    // Only assign a series_id when at least one member has the "(#N)" repeat suffix
+    for (const members of Array.from(groups.values())) {
+      if (!members.some((m: { id: string; name: string | null }) => hasRepeatSuffix(m.name))) continue;
+      const seriesId = Crypto.randomUUID();
+      for (const { id } of members) {
+        await db.runAsync(`UPDATE workouts SET series_id = ? WHERE id = ?`, seriesId, id);
+      }
+    }
   },
 ];
 
