@@ -198,6 +198,9 @@ export async function getWeeklyPRCount(
   weekStart: string,
   weekEnd: string
 ): Promise<number> {
+  // A PR is only counted when the max weight this week exceeds the max weight
+  // from the most recent previous workout for that exercise.
+  // New exercises (no prior history) are excluded via INNER JOIN.
   const row = await db.getFirstAsync<{ pr_count: number }>(
     `WITH period_max AS (
        SELECT we.exercise_id, MAX(ws.weight_kg) AS max_weight
@@ -208,20 +211,30 @@ export async function getWeeklyPRCount(
          AND date(w.started_at) BETWEEN ? AND ?
          AND ws.weight_kg IS NOT NULL
        GROUP BY we.exercise_id
+     ),
+     last_workout_per_exercise AS (
+       SELECT we.exercise_id, MAX(w.completed_at) AS last_completed_at
+       FROM workout_exercises we
+       JOIN workouts w ON w.id = we.workout_id
+       WHERE w.status = 'completed'
+         AND date(w.started_at) < ?
+       GROUP BY we.exercise_id
+     ),
+     last_workout_max AS (
+       SELECT we.exercise_id, MAX(ws.weight_kg) AS max_weight
+       FROM workout_sets ws
+       JOIN workout_exercises we ON we.id = ws.workout_exercise_id
+       JOIN workouts w ON w.id = we.workout_id
+       JOIN last_workout_per_exercise lwe
+         ON lwe.exercise_id = we.exercise_id
+         AND lwe.last_completed_at = w.completed_at
+       WHERE ws.weight_kg IS NOT NULL
+       GROUP BY we.exercise_id
      )
      SELECT COUNT(*) AS pr_count
      FROM period_max pm
-     WHERE pm.max_weight > COALESCE(
-       (SELECT MAX(ws2.weight_kg)
-        FROM workout_sets ws2
-        JOIN workout_exercises we2 ON we2.id = ws2.workout_exercise_id
-        JOIN workouts w2 ON w2.id = we2.workout_id
-        WHERE we2.exercise_id = pm.exercise_id
-          AND w2.status = 'completed'
-          AND date(w2.started_at) < ?
-          AND ws2.weight_kg IS NOT NULL),
-       0
-     )`,
+     JOIN last_workout_max lwm ON lwm.exercise_id = pm.exercise_id
+     WHERE pm.max_weight > lwm.max_weight`,
     weekStart,
     weekEnd,
     weekStart
