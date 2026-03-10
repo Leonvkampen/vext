@@ -10,7 +10,6 @@ const TAB_ICONS: Record<string, { active: keyof typeof Ionicons.glyphMap; inacti
   index: { active: 'home', inactive: 'home-outline' },
   workouts: { active: 'time', inactive: 'time-outline' },
   exercises: { active: 'barbell', inactive: 'barbell-outline' },
-  progress: { active: 'trending-up', inactive: 'trending-up-outline' },
   profile: { active: 'person', inactive: 'person-outline' },
 };
 
@@ -19,73 +18,49 @@ export function TabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
   return (
     <View className="bg-background-50">
-      <View className="flex-row items-end border-t border-background-100 pt-2 px-2 pb-1">
-      {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key];
-        const label = options.title ?? route.name;
-        const isFocused = state.index === index;
-        const isCenterSlot = index === 2;
+      {/* FAB - centered above the tab bar */}
+      <Pressable
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          router.push('/workout/new');
+        }}
+        className="absolute -top-14 self-center items-center justify-center rounded-full bg-primary h-12 shadow-lg w-[180px]"
+        style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.95 : 1 }] })}
+      >
+        <Text className="text-base font-semibold text-background">Start Workout</Text>
+      </Pressable>
 
-        const onPress = () => {
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-            canPreventDefault: true,
-          });
+      <View className="flex-row items-center border-t border-background-100 pt-2 px-2 pb-1">
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const label = options.title ?? route.name;
+          const isFocused = state.index === index;
+          const icons = TAB_ICONS[route.name];
 
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name, route.params);
-          }
-        };
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
+          };
 
-        if (isCenterSlot) {
           return (
-            <View key={route.key} className="flex-1 items-center">
-              {/* FAB above the tab bar */}
-              <Pressable
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  router.push('/workout/new');
-                }}
-                className="absolute -top-12 items-center justify-center rounded-full bg-primary h-12 shadow-lg w-[180px]"
-                style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.95 : 1 }] })}
-              >
-                <Text className="text-base font-semibold text-background">Start Workout</Text>
-              </Pressable>
-              {/* Tab item below FAB */}
-              <Pressable onPress={onPress} className="items-center pt-4 mt-2">
-                <Ionicons
-                  name={isFocused ? TAB_ICONS[route.name]?.active ?? 'ellipse' : TAB_ICONS[route.name]?.inactive ?? 'ellipse-outline'}
-                  size={22}
-                  color={isFocused ? 'rgb(52, 211, 153)' : 'rgb(115, 115, 115)'}
-                />
-                <Text
-                  className={`text-xs mt-1 ${isFocused ? 'text-primary font-semibold' : 'text-foreground-subtle'}`}
-                >
-                  {label}
-                </Text>
-              </Pressable>
-            </View>
+            <Pressable key={route.key} onPress={onPress} className="flex-1 items-center py-1">
+              <Ionicons
+                name={isFocused ? icons?.active ?? 'ellipse' : icons?.inactive ?? 'ellipse-outline'}
+                size={22}
+                color={isFocused ? 'rgb(52, 211, 153)' : 'rgb(115, 115, 115)'}
+              />
+              <Text className={`text-xs mt-1 ${isFocused ? 'text-primary font-semibold' : 'text-foreground-subtle'}`}>
+                {label}
+              </Text>
+            </Pressable>
           );
-        }
-
-        const icons = TAB_ICONS[route.name];
-
-        return (
-          <Pressable key={route.key} onPress={onPress} className="flex-1 items-center py-1">
-            <Ionicons
-              name={isFocused ? icons?.active ?? 'ellipse' : icons?.inactive ?? 'ellipse-outline'}
-              size={22}
-              color={isFocused ? 'rgb(52, 211, 153)' : 'rgb(115, 115, 115)'}
-            />
-            <Text
-              className={`text-xs mt-1 ${isFocused ? 'text-primary font-semibold' : 'text-foreground-subtle'}`}
-            >
-              {label}
-            </Text>
-          </Pressable>
-        );
-      })}
+        })}
       </View>
     </View>
   );
